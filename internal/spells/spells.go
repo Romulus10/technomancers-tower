@@ -233,7 +233,7 @@ func (sm *SpellManager) Draw(screen *ebiten.Image) {
 		} else {
 			r := float32(ef.Radius * (1.1 - float64(ratio)*0.1))
 			vector.StrokeCircle(screen, float32(ef.X), float32(ef.Y), r, 3.0*ratio, ef.Color, false)
-			vector.DrawFilledCircle(screen, float32(ef.X), float32(ef.Y), r*0.8*ratio, color.RGBA{
+			vector.FillCircle(screen, float32(ef.X), float32(ef.Y), r*0.8*ratio, color.RGBA{
 				R: ef.Color.R, G: ef.Color.G, B: ef.Color.B, A: uint8(100 * ratio),
 			}, false)
 		}

@@ -153,7 +153,7 @@ func (dm *DraftManager) Draw(screen *ebiten.Image) {
 	}
 
 	// Dim background
-	vector.DrawFilledRect(screen, 0, 0, 800, 600, color.RGBA{R: 5, G: 8, B: 15, A: 220}, false)
+	vector.FillRect(screen, 0, 0, 800, 600, color.RGBA{R: 5, G: 8, B: 15, A: 220}, false)
 
 	// Header
 	ebitenutil.DebugPrintAt(screen, "=== RUNTIME LEVEL UP: SELECT AN UPGRADE ===", 245, 105)
@@ -179,7 +179,7 @@ func (dm *DraftManager) Draw(screen *ebiten.Image) {
 		if isHovered {
 			bgColor = color.RGBA{R: 26, G: 36, B: 55, A: 255}
 		}
-		vector.DrawFilledRect(screen, cx, cy, cardW, cardH, bgColor, false)
+		vector.FillRect(screen, cx, cy, cardW, cardH, bgColor, false)
 
 		// Border
 		borderCol := card.Color
@@ -189,7 +189,7 @@ func (dm *DraftManager) Draw(screen *ebiten.Image) {
 		vector.StrokeRect(screen, cx, cy, cardW, cardH, 2, borderCol, false)
 
 		// Top Banner
-		vector.DrawFilledRect(screen, cx+2, cy+2, cardW-4, 30, color.RGBA{R: card.Color.R / 3, G: card.Color.G / 3, B: card.Color.B / 3, A: 255}, false)
+		vector.FillRect(screen, cx+2, cy+2, cardW-4, 30, color.RGBA{R: card.Color.R / 3, G: card.Color.G / 3, B: card.Color.B / 3, A: 255}, false)
 		ebitenutil.DebugPrintAt(screen, card.Title, int(cx)+15, int(cy)+10)
 
 		// Card Subtitle (wrapped if needed)

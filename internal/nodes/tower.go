@@ -529,7 +529,7 @@ func (tm *TowerManager) Draw(screen *ebiten.Image) {
 		ty := float32(t.WorldY)
 
 		// Base shape
-		vector.DrawFilledRect(screen, tx-12, ty-12, 24, 24, t.Def.Color, false)
+		vector.FillRect(screen, tx-12, ty-12, 24, 24, t.Def.Color, false)
 		if t.Level >= MaxTowerLevel {
 			// Pulsing golden/amber border for ready overclock/promotion
 			vector.StrokeRect(screen, tx-13, ty-13, 26, 26, 2.0, color.RGBA{R: 255, G: 215, B: 0, A: 255}, false)
@@ -551,9 +551,9 @@ func (tm *TowerManager) Draw(screen *ebiten.Image) {
 		for lvl := 1; lvl <= MaxTowerLevel; lvl++ {
 			px := pipStartX + float32(lvl-1)*(pipW+pipGap)
 			if lvl <= t.Level {
-				vector.DrawFilledRect(screen, px, pipY, pipW, pipW, color.RGBA{R: 255, G: 220, B: 50, A: 255}, false)
+				vector.FillRect(screen, px, pipY, pipW, pipW, color.RGBA{R: 255, G: 220, B: 50, A: 255}, false)
 			} else {
-				vector.DrawFilledRect(screen, px, pipY, pipW, pipW, color.RGBA{R: 30, G: 40, B: 55, A: 160}, false)
+				vector.FillRect(screen, px, pipY, pipW, pipW, color.RGBA{R: 30, G: 40, B: 55, A: 160}, false)
 			}
 		}
 
@@ -561,7 +561,7 @@ func (tm *TowerManager) Draw(screen *ebiten.Image) {
 		if t.Level >= MaxTowerLevel {
 			upgCost := t.GetUpgradeCost()
 			badgeText := fmt.Sprintf("^%sB", economy.FormatNumber(upgCost))
-			vector.DrawFilledRect(screen, tx-18, ty-22, 36, 10, color.RGBA{R: 15, G: 30, B: 20, A: 220}, false)
+			vector.FillRect(screen, tx-18, ty-22, 36, 10, color.RGBA{R: 15, G: 30, B: 20, A: 220}, false)
 			vector.StrokeRect(screen, tx-18, ty-22, 36, 10, 1.0, color.RGBA{R: 80, G: 255, B: 120, A: 240}, false)
 			ebitenutil.DebugPrintAt(screen, badgeText, int(tx)-16, int(ty)-24)
 		}
@@ -578,7 +578,7 @@ func (tm *TowerManager) Draw(screen *ebiten.Image) {
 
 		// Passive generator indicator
 		if t.Def.Delivery.Type == data.DeliveryPassiveGenerator {
-			vector.DrawFilledCircle(screen, tx, ty, 5, color.RGBA{R: 255, G: 255, B: 255, A: 240}, false)
+			vector.FillCircle(screen, tx, ty, 5, color.RGBA{R: 255, G: 255, B: 255, A: 240}, false)
 		}
 
 		// Level up expanding ring animation
@@ -605,9 +605,9 @@ func (tm *TowerManager) Draw(screen *ebiten.Image) {
 		px := float32(p.X)
 		py := float32(p.Y)
 		if p.IsMortar {
-			vector.DrawFilledCircle(screen, px, py, 4.5, color.RGBA{R: 255, G: 160, B: 40, A: 255}, false)
+			vector.FillCircle(screen, px, py, 4.5, color.RGBA{R: 255, G: 160, B: 40, A: 255}, false)
 		} else {
-			vector.DrawFilledCircle(screen, px, py, 3.0, color.RGBA{R: 0, G: 240, B: 255, A: 255}, false)
+			vector.FillCircle(screen, px, py, 3.0, color.RGBA{R: 0, G: 240, B: 255, A: 255}, false)
 		}
 	}
 }

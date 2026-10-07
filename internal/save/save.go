@@ -83,7 +83,7 @@ type SaveManager struct {
 
 func NewSaveManager() *SaveManager {
 	home, err := os.UserHomeDir()
-	saveDir := "."
+	var saveDir string
 	if err == nil {
 		saveDir = filepath.Join(home, ".technomancers-tower", "saves")
 	} else {

@@ -86,7 +86,7 @@ func (km *KeybindManager) Update() bool {
 		if inpututil.IsKeyJustPressed(k) {
 			km.applyRebind(k)
 			km.IsRebinding = false
-			km.Save()
+			_ = km.Save()
 			return true
 		}
 	}

@@ -171,7 +171,7 @@ func (m *MetaManager) BuyTalent(id string) bool {
 	if m.GlitchShards >= cost {
 		m.GlitchShards -= cost
 		t.Level++
-		m.SaveActiveSlot()
+		_ = m.SaveActiveSlot()
 		return true
 	}
 	return false
@@ -179,7 +179,7 @@ func (m *MetaManager) BuyTalent(id string) bool {
 
 func (m *MetaManager) AddShards(amount int) {
 	m.GlitchShards += amount
-	m.SaveActiveSlot()
+	_ = m.SaveActiveSlot()
 }
 
 func (m *MetaManager) SaveActiveSlot() error {

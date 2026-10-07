@@ -57,7 +57,7 @@ func (u *UI) DrawTitleScreen(screen *ebiten.Image, animTime float64, version str
 	titleBoxX := float32(120)
 	titleBoxY := float32(95)
 
-	vector.DrawFilledRect(screen, titleBoxX, titleBoxY, titleBoxW, titleBoxH, color.RGBA{R: 18, G: 26, B: 42, A: 240}, false)
+	vector.FillRect(screen, titleBoxX, titleBoxY, titleBoxW, titleBoxH, color.RGBA{R: 18, G: 26, B: 42, A: 240}, false)
 	vector.StrokeRect(screen, titleBoxX, titleBoxY, titleBoxW, titleBoxH, 2.5, color.RGBA{R: 0, G: 220, B: 255, A: 255}, false)
 
 	ebitenutil.DebugPrintAt(screen, "==================================================", 185, 110)
@@ -66,11 +66,9 @@ func (u *UI) DrawTitleScreen(screen *ebiten.Image, animTime float64, version str
 	ebitenutil.DebugPrintAt(screen, "CYBER-ARCANE ENDLESS ROGUELITE MAZE DEFENSE", 235, 172)
 
 	// Menu Buttons
-	btnW := float32(280)
-	btnH := float32(48)
 	btnX := float32(260)
-	btnW = float32(280)
-	btnH = float32(44)
+	btnW := float32(280)
+	btnH := float32(44)
 
 	// 1. [ START GAME ]
 	btn1Y := float32(255)
@@ -81,7 +79,7 @@ func (u *UI) DrawTitleScreen(screen *ebiten.Image, animTime float64, version str
 		bg1 = color.RGBA{R: 30, G: 95, B: 155, A: 255}
 		border1 = color.RGBA{R: 100, G: 245, B: 255, A: 255}
 	}
-	vector.DrawFilledRect(screen, btnX, btn1Y, btnW, btnH, bg1, false)
+	vector.FillRect(screen, btnX, btn1Y, btnW, btnH, bg1, false)
 	vector.StrokeRect(screen, btnX, btn1Y, btnW, btnH, 2, border1, false)
 	ebitenutil.DebugPrintAt(screen, "[ START GAME / PROFILES ]", int(btnX)+45, int(btn1Y)+15)
 
@@ -94,7 +92,7 @@ func (u *UI) DrawTitleScreen(screen *ebiten.Image, animTime float64, version str
 		bg2 = color.RGBA{R: 40, G: 55, B: 85, A: 255}
 		border2 = color.RGBA{R: 120, G: 200, B: 255, A: 255}
 	}
-	vector.DrawFilledRect(screen, btnX, btn2Y, btnW, btnH, bg2, false)
+	vector.FillRect(screen, btnX, btn2Y, btnW, btnH, bg2, false)
 	vector.StrokeRect(screen, btnX, btn2Y, btnW, btnH, 1.5, border2, false)
 	ebitenutil.DebugPrintAt(screen, "[ HOW TO PLAY / CONTROLS ]", int(btnX)+45, int(btn2Y)+15)
 
@@ -107,7 +105,7 @@ func (u *UI) DrawTitleScreen(screen *ebiten.Image, animTime float64, version str
 		bg3 = color.RGBA{R: 50, G: 40, B: 75, A: 255}
 		border3 = color.RGBA{R: 200, G: 150, B: 255, A: 255}
 	}
-	vector.DrawFilledRect(screen, btnX, btn3Y, btnW, btnH, bg3, false)
+	vector.FillRect(screen, btnX, btn3Y, btnW, btnH, bg3, false)
 	vector.StrokeRect(screen, btnX, btn3Y, btnW, btnH, 1.5, border3, false)
 	ebitenutil.DebugPrintAt(screen, "[ SETTINGS & RESOLUTION ]", int(btnX)+45, int(btn3Y)+15)
 
@@ -120,7 +118,7 @@ func (u *UI) DrawTitleScreen(screen *ebiten.Image, animTime float64, version str
 		bg4 = color.RGBA{R: 65, G: 32, B: 45, A: 255}
 		border4 = color.RGBA{R: 255, G: 120, B: 140, A: 255}
 	}
-	vector.DrawFilledRect(screen, btnX, btn4Y, btnW, btnH, bg4, false)
+	vector.FillRect(screen, btnX, btn4Y, btnW, btnH, bg4, false)
 	vector.StrokeRect(screen, btnX, btn4Y, btnW, btnH, 1.5, border4, false)
 	ebitenutil.DebugPrintAt(screen, "[ EXIT MAINFRAME ]", int(btnX)+75, int(btn4Y)+15)
 
@@ -132,7 +130,7 @@ func (u *UI) DrawTitleScreen(screen *ebiten.Image, animTime float64, version str
 
 func (u *UI) DrawHowToPlay(screen *ebiten.Image) {
 	// Dark backdrop
-	vector.DrawFilledRect(screen, 0, 0, 800, 600, color.RGBA{R: 4, G: 6, B: 10, A: 240}, false)
+	vector.FillRect(screen, 0, 0, 800, 600, color.RGBA{R: 4, G: 6, B: 10, A: 240}, false)
 
 	// Dialog Window
 	boxX := float32(80)
@@ -140,7 +138,7 @@ func (u *UI) DrawHowToPlay(screen *ebiten.Image) {
 	boxW := float32(640)
 	boxH := float32(500)
 
-	vector.DrawFilledRect(screen, boxX, boxY, boxW, boxH, color.RGBA{R: 16, G: 22, B: 34, A: 255}, false)
+	vector.FillRect(screen, boxX, boxY, boxW, boxH, color.RGBA{R: 16, G: 22, B: 34, A: 255}, false)
 	vector.StrokeRect(screen, boxX, boxY, boxW, boxH, 2, color.RGBA{R: 0, G: 200, B: 255, A: 255}, false)
 
 	ebitenutil.DebugPrintAt(screen, "=== OPERATOR DIRECTIVE & SYSTEM CONTROLS ===", 240, 75)
@@ -177,30 +175,30 @@ func (u *UI) DrawHowToPlay(screen *ebiten.Image) {
 	closeBtnW := float32(240)
 	closeBtnH := float32(40)
 
-	vector.DrawFilledRect(screen, closeBtnX, closeBtnY, closeBtnW, closeBtnH, color.RGBA{R: 20, G: 70, B: 110, A: 255}, false)
+	vector.FillRect(screen, closeBtnX, closeBtnY, closeBtnW, closeBtnH, color.RGBA{R: 20, G: 70, B: 110, A: 255}, false)
 	vector.StrokeRect(screen, closeBtnX, closeBtnY, closeBtnW, closeBtnH, 1.5, color.RGBA{R: 0, G: 220, B: 255, A: 255}, false)
 	ebitenutil.DebugPrintAt(screen, "[ CLOSE GUIDE ] (ESC / SPACE)", int(closeBtnX)+25, int(closeBtnY)+14)
 }
 
 func (u *UI) DrawHUD(screen *ebiten.Image, run *economy.RunState, spawnerActiveSurge bool, surgeTimeLeft float64, graceTimeLeft float64, waveNum int, phase malware.WavePhase, phaseTimeLeft float64, threatLevel int) {
 	// Top Header Bar
-	vector.DrawFilledRect(screen, 0, 0, 800, 58, color.RGBA{R: 16, G: 20, B: 30, A: 255}, false)
+	vector.FillRect(screen, 0, 0, 800, 58, color.RGBA{R: 16, G: 20, B: 30, A: 255}, false)
 	vector.StrokeLine(screen, 0, 58, 800, 58, 1.5, color.RGBA{R: 0, G: 160, B: 200, A: 255}, false)
 
 	// 1. Kernel Integrity (Health)
-	vector.DrawFilledRect(screen, 16, 12, 130, 16, color.RGBA{R: 40, G: 20, B: 25, A: 255}, false)
+	vector.FillRect(screen, 16, 12, 130, 16, color.RGBA{R: 40, G: 20, B: 25, A: 255}, false)
 	hpRatio := float32(run.KernelHP / run.MaxKernelHP)
 	if hpRatio > 0 {
-		vector.DrawFilledRect(screen, 16, 12, 130*hpRatio, 16, color.RGBA{R: 240, G: 60, B: 80, A: 255}, false)
+		vector.FillRect(screen, 16, 12, 130*hpRatio, 16, color.RGBA{R: 240, G: 60, B: 80, A: 255}, false)
 	}
 	vector.StrokeRect(screen, 16, 12, 130, 16, 1.5, color.RGBA{R: 255, G: 120, B: 140, A: 255}, false)
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("KERNEL HP: %.0f/%.0f", run.KernelHP, run.MaxKernelHP), 20, 32)
 
 	// 2. Cyber-Mana Bar & Siphon Rate
-	vector.DrawFilledRect(screen, 155, 12, 130, 16, color.RGBA{R: 25, G: 20, B: 45, A: 255}, false)
+	vector.FillRect(screen, 155, 12, 130, 16, color.RGBA{R: 25, G: 20, B: 45, A: 255}, false)
 	manaRatio := float32(run.Mana / run.MaxMana)
 	if manaRatio > 0 {
-		vector.DrawFilledRect(screen, 155, 12, 130*manaRatio, 16, color.RGBA{R: 160, G: 70, B: 255, A: 255}, false)
+		vector.FillRect(screen, 155, 12, 130*manaRatio, 16, color.RGBA{R: 160, G: 70, B: 255, A: 255}, false)
 	}
 	vector.StrokeRect(screen, 155, 12, 130, 16, 1.5, color.RGBA{R: 200, G: 130, B: 255, A: 255}, false)
 	effectiveManaRate := run.BaseManaRate * run.ManaGenMult
@@ -216,10 +214,10 @@ func (u *UI) DrawHUD(screen *ebiten.Image, run *economy.RunState, spawnerActiveS
 	}
 	ebitenutil.DebugPrintAt(screen, byteStr, 295, 14)
 
-	vector.DrawFilledRect(screen, 295, 32, 100, 10, color.RGBA{R: 20, G: 35, B: 25, A: 255}, false)
+	vector.FillRect(screen, 295, 32, 100, 10, color.RGBA{R: 20, G: 35, B: 25, A: 255}, false)
 	xpRatio := float32(run.CurrentXP / run.TargetXP)
 	if xpRatio > 0 {
-		vector.DrawFilledRect(screen, 295, 32, 100*xpRatio, 10, color.RGBA{R: 60, G: 220, B: 100, A: 255}, false)
+		vector.FillRect(screen, 295, 32, 100*xpRatio, 10, color.RGBA{R: 60, G: 220, B: 100, A: 255}, false)
 	}
 	vector.StrokeRect(screen, 295, 32, 100, 10, 1, color.RGBA{R: 120, G: 255, B: 150, A: 255}, false)
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("LVL %d", run.Level), 402, 29)
@@ -244,7 +242,7 @@ func (u *UI) DrawHUD(screen *ebiten.Image, run *economy.RunState, spawnerActiveS
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("WAVE %d", waveNum), 475, 14)
 	}
 	ebitenutil.DebugPrintAt(screen, phaseText, 475, 32)
-	vector.DrawFilledRect(screen, 465, 10, 3, 38, phaseColor, false)
+	vector.FillRect(screen, 465, 10, 3, 38, phaseColor, false)
 
 	// 5. Survival Time & Purged Stats
 	mins := int(run.RunTime) / 60
@@ -257,7 +255,7 @@ func (u *UI) DrawHUD(screen *ebiten.Image, run *economy.RunState, spawnerActiveS
 
 	// Grace Period / Preparation Countdown Banner
 	if graceTimeLeft > 0 {
-		vector.DrawFilledRect(screen, 210, 75, 380, 52, color.RGBA{R: 18, G: 35, B: 55, A: 235}, false)
+		vector.FillRect(screen, 210, 75, 380, 52, color.RGBA{R: 18, G: 35, B: 55, A: 235}, false)
 		vector.StrokeRect(screen, 210, 75, 380, 52, 2, color.RGBA{R: 0, G: 220, B: 255, A: 255}, false)
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf(">>> PREPARING FIREWALLS: MALWARE IN %.1fs <<<", graceTimeLeft), 235, 84)
 		ebitenutil.DebugPrintAt(screen, "[ Place defense nodes (1-5) | Press SPACE to Deploy ]", 225, 104)
@@ -266,7 +264,7 @@ func (u *UI) DrawHUD(screen *ebiten.Image, run *economy.RunState, spawnerActiveS
 
 func (u *UI) DrawToolbar(screen *ebiten.Image, tm *nodes.TowerManager, sm *spells.SpellManager, km *input.KeybindManager, loadoutTowers [input.MaxToolbarSlots]string, loadoutSpells [input.MaxToolbarSlots]string, run *economy.RunState, cx, cy int) {
 	// Bottom Toolbar Panel
-	vector.DrawFilledRect(screen, 0, 535, 800, 65, color.RGBA{R: 14, G: 18, B: 26, A: 255}, false)
+	vector.FillRect(screen, 0, 535, 800, 65, color.RGBA{R: 14, G: 18, B: 26, A: 255}, false)
 	vector.StrokeLine(screen, 0, 535, 800, 535, 1.5, color.RGBA{R: 0, G: 160, B: 200, A: 255}, false)
 
 	// Defense Nodes (Slots 1..5)
@@ -283,7 +281,7 @@ func (u *UI) DrawToolbar(screen *ebiten.Image, tm *nodes.TowerManager, sm *spell
 
 		if def == nil {
 			// Empty Slot
-			vector.DrawFilledRect(screen, bx, by, btnW, btnH, color.RGBA{R: 18, G: 20, B: 28, A: 200}, false)
+			vector.FillRect(screen, bx, by, btnW, btnH, color.RGBA{R: 18, G: 20, B: 28, A: 200}, false)
 			vector.StrokeRect(screen, bx, by, btnW, btnH, 1, color.RGBA{R: 50, G: 60, B: 75, A: 180}, false)
 			keyLabel := km.KeyName(km.TowerKeys[i])
 			ebitenutil.DebugPrintAt(screen, fmt.Sprintf("[%s]", keyLabel), int(bx)+4, int(by)+6)
@@ -302,7 +300,7 @@ func (u *UI) DrawToolbar(screen *ebiten.Image, tm *nodes.TowerManager, sm *spell
 			bgColor = color.RGBA{R: 18, G: 18, B: 22, A: 200}
 		}
 
-		vector.DrawFilledRect(screen, bx, by, btnW, btnH, bgColor, false)
+		vector.FillRect(screen, bx, by, btnW, btnH, bgColor, false)
 
 		borderColor := def.Color
 		if !def.Unlocked || !canAfford {
@@ -324,7 +322,7 @@ func (u *UI) DrawToolbar(screen *ebiten.Image, tm *nodes.TowerManager, sm *spell
 	codexBtnY := float32(542)
 	codexBtnW := float32(40)
 	codexBtnH := float32(50)
-	vector.DrawFilledRect(screen, codexBtnX, codexBtnY, codexBtnW, codexBtnH, color.RGBA{R: 28, G: 38, B: 60, A: 255}, false)
+	vector.FillRect(screen, codexBtnX, codexBtnY, codexBtnW, codexBtnH, color.RGBA{R: 28, G: 38, B: 60, A: 255}, false)
 	vector.StrokeRect(screen, codexBtnX, codexBtnY, codexBtnW, codexBtnH, 1.5, color.RGBA{R: 0, G: 220, B: 255, A: 255}, false)
 	ebitenutil.DebugPrintAt(screen, "TAB", int(codexBtnX)+9, int(codexBtnY)+10)
 	ebitenutil.DebugPrintAt(screen, "BOOK", int(codexBtnX)+5, int(codexBtnY)+28)
@@ -340,7 +338,7 @@ func (u *UI) DrawToolbar(screen *ebiten.Image, tm *nodes.TowerManager, sm *spell
 
 		if def == nil {
 			// Empty Slot
-			vector.DrawFilledRect(screen, bx, by, btnW, btnH, color.RGBA{R: 20, G: 18, B: 28, A: 200}, false)
+			vector.FillRect(screen, bx, by, btnW, btnH, color.RGBA{R: 20, G: 18, B: 28, A: 200}, false)
 			vector.StrokeRect(screen, bx, by, btnW, btnH, 1, color.RGBA{R: 60, G: 50, B: 75, A: 180}, false)
 			keyLabel := km.KeyName(km.SpellKeys[i])
 			ebitenutil.DebugPrintAt(screen, fmt.Sprintf("[%s]", keyLabel), int(bx)+4, int(by)+6)
@@ -366,11 +364,11 @@ func (u *UI) DrawToolbar(screen *ebiten.Image, tm *nodes.TowerManager, sm *spell
 			bgColor = color.RGBA{R: 180, G: 20, B: 35, A: flashAlpha}
 		}
 
-		vector.DrawFilledRect(screen, bx, by, btnW, btnH, bgColor, false)
+		vector.FillRect(screen, bx, by, btnW, btnH, bgColor, false)
 
 		if cd > 0 && def.Cooldown > 0 {
 			cdRatio := float32(cd / (def.Cooldown * run.SpellCooldownMult))
-			vector.DrawFilledRect(screen, bx, by, btnW, btnH*cdRatio, color.RGBA{R: 0, G: 0, B: 0, A: 160}, false)
+			vector.FillRect(screen, bx, by, btnW, btnH*cdRatio, color.RGBA{R: 0, G: 0, B: 0, A: 160}, false)
 		}
 
 		borderColor := def.Color
@@ -420,7 +418,7 @@ func (u *UI) DrawToolbar(screen *ebiten.Image, tm *nodes.TowerManager, sm *spell
 			bgColor.B = uint8(math.Min(255, float64(bgColor.B)+30))
 		}
 
-		vector.DrawFilledRect(screen, upgBtnX, upgBtnY, upgBtnW, upgBtnH, bgColor, false)
+		vector.FillRect(screen, upgBtnX, upgBtnY, upgBtnW, upgBtnH, bgColor, false)
 		vector.StrokeRect(screen, upgBtnX, upgBtnY, upgBtnW, upgBtnH, 1.8, borderColor, false)
 		ebitenutil.DebugPrintAt(screen, btnLabel, int(upgBtnX)+10, int(upgBtnY)+8)
 	}
@@ -441,7 +439,7 @@ func (u *UI) DrawPlacementPreview(screen *ebiten.Image, grid *motherboard.Grid, 
 				if !canBuild {
 					boxColor = color.RGBA{R: 255, G: 50, B: 50, A: 160}
 				}
-				vector.DrawFilledRect(screen, sx, sy, sz, sz, boxColor, false)
+				vector.FillRect(screen, sx, sy, sz, sz, boxColor, false)
 
 				if def.Range > 0 {
 					rcx, rcy := grid.GridToScreenCenter(gx, gy)
@@ -456,7 +454,7 @@ func (u *UI) DrawPlacementPreview(screen *ebiten.Image, grid *motherboard.Grid, 
 		def := sm.Registry.GetSpell(u.SelectedSpell)
 		if def != nil && def.TargetRadius > 0 {
 			vector.StrokeCircle(screen, float32(cx), float32(cy), float32(def.TargetRadius), 2, def.Color, false)
-			vector.DrawFilledCircle(screen, float32(cx), float32(cy), float32(def.TargetRadius), color.RGBA{
+			vector.FillCircle(screen, float32(cx), float32(cy), float32(def.TargetRadius), color.RGBA{
 				R: def.Color.R, G: def.Color.G, B: def.Color.B, A: 40,
 			}, false)
 		}
@@ -494,7 +492,7 @@ func (u *UI) DrawPlacementPreview(screen *ebiten.Image, grid *motherboard.Grid, 
 					tipY = 65
 				}
 
-				vector.DrawFilledRect(screen, tipX, tipY, tipW, tipH, color.RGBA{R: 16, G: 20, B: 30, A: 240}, false)
+				vector.FillRect(screen, tipX, tipY, tipW, tipH, color.RGBA{R: 16, G: 20, B: 30, A: 240}, false)
 				vector.StrokeRect(screen, tipX, tipY, tipW, tipH, 1.5, color.RGBA{R: 0, G: 220, B: 255, A: 255}, false)
 
 				// Header: Name & Tier / Level
@@ -505,16 +503,16 @@ func (u *UI) DrawPlacementPreview(screen *ebiten.Image, grid *motherboard.Grid, 
 				ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%s%s [Lv.%d/%d]", tower.Def.Name, tierStr, tower.Level, nodes.MaxTowerLevel), int(tipX)+8, int(tipY)+6)
 
 				// XP Bar
-				vector.DrawFilledRect(screen, tipX+8, tipY+24, 184, 8, color.RGBA{R: 25, G: 35, B: 45, A: 255}, false)
+				vector.FillRect(screen, tipX+8, tipY+24, 184, 8, color.RGBA{R: 25, G: 35, B: 45, A: 255}, false)
 				if tower.Level >= nodes.MaxTowerLevel {
-					vector.DrawFilledRect(screen, tipX+8, tipY+24, 184, 8, color.RGBA{R: 255, G: 215, B: 0, A: 255}, false)
+					vector.FillRect(screen, tipX+8, tipY+24, 184, 8, color.RGBA{R: 255, G: 215, B: 0, A: 255}, false)
 					ebitenutil.DebugPrintAt(screen, "XP: MAX RANK (READY)", int(tipX)+8, int(tipY)+36)
 				} else if tower.TargetXP > 0 {
 					ratio := float32(tower.XP / tower.TargetXP)
 					if ratio > 1 {
 						ratio = 1
 					}
-					vector.DrawFilledRect(screen, tipX+8, tipY+24, 184*ratio, 8, color.RGBA{R: 0, G: 220, B: 255, A: 255}, false)
+					vector.FillRect(screen, tipX+8, tipY+24, 184*ratio, 8, color.RGBA{R: 0, G: 220, B: 255, A: 255}, false)
 					ebitenutil.DebugPrintAt(screen, fmt.Sprintf("XP: %.0f / %.0f (%.0f%%)", tower.XP, tower.TargetXP, ratio*100), int(tipX)+8, int(tipY)+36)
 				}
 				vector.StrokeRect(screen, tipX+8, tipY+24, 184, 8, 1, color.RGBA{R: 80, G: 120, B: 160, A: 200}, false)
@@ -546,9 +544,9 @@ func (u *UI) DrawPlacementPreview(screen *ebiten.Image, grid *motherboard.Grid, 
 }
 
 func (u *UI) DrawGameOver(screen *ebiten.Image, run *economy.RunState, metaMgr *meta.MetaManager) {
-	vector.DrawFilledRect(screen, 0, 0, 800, 600, color.RGBA{R: 8, G: 10, B: 16, A: 235}, false)
+	vector.FillRect(screen, 0, 0, 800, 600, color.RGBA{R: 8, G: 10, B: 16, A: 235}, false)
 
-	vector.DrawFilledRect(screen, 180, 90, 440, 420, color.RGBA{R: 20, G: 24, B: 36, A: 255}, false)
+	vector.FillRect(screen, 180, 90, 440, 420, color.RGBA{R: 20, G: 24, B: 36, A: 255}, false)
 	vector.StrokeRect(screen, 180, 90, 440, 420, 2, color.RGBA{R: 255, G: 60, B: 80, A: 255}, false)
 
 	ebitenutil.DebugPrintAt(screen, "=== KERNEL PANIC: CORE INTEGRITY LOST ===", 240, 120)
@@ -565,21 +563,21 @@ func (u *UI) DrawGameOver(screen *ebiten.Image, run *economy.RunState, metaMgr *
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("GLITCH SHARDS EXTRACTED: +%d", run.ShardsEarned), 240, 315)
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Total Glitch Shards in Archive: %d", metaMgr.GlitchShards), 240, 345)
 
-	vector.DrawFilledRect(screen, 240, 390, 320, 40, color.RGBA{R: 35, G: 55, B: 85, A: 255}, false)
+	vector.FillRect(screen, 240, 390, 320, 40, color.RGBA{R: 35, G: 55, B: 85, A: 255}, false)
 	vector.StrokeRect(screen, 240, 390, 320, 40, 1.5, color.RGBA{R: 0, G: 200, B: 255, A: 255}, false)
 	ebitenutil.DebugPrintAt(screen, "[ ENTER ROOT ACCESS / META-SHOP ] (SPACE)", 265, 404)
 
-	vector.DrawFilledRect(screen, 240, 445, 320, 40, color.RGBA{R: 30, G: 45, B: 65, A: 255}, false)
+	vector.FillRect(screen, 240, 445, 320, 40, color.RGBA{R: 30, G: 45, B: 65, A: 255}, false)
 	vector.StrokeRect(screen, 240, 445, 320, 40, 1.5, color.RGBA{R: 80, G: 220, B: 150, A: 255}, false)
 	ebitenutil.DebugPrintAt(screen, "[ QUICK REBOOT KERNEL ] (ENTER)", 295, 459)
 }
 
 func (u *UI) DrawPauseMenu(screen *ebiten.Image) {
 	// Dark overlay
-	vector.DrawFilledRect(screen, 0, 0, 800, 600, color.RGBA{R: 5, G: 8, B: 14, A: 230}, false)
+	vector.FillRect(screen, 0, 0, 800, 600, color.RGBA{R: 5, G: 8, B: 14, A: 230}, false)
 
 	// Pause Box
-	vector.DrawFilledRect(screen, 220, 95, 360, 410, color.RGBA{R: 20, G: 26, B: 38, A: 255}, false)
+	vector.FillRect(screen, 220, 95, 360, 410, color.RGBA{R: 20, G: 26, B: 38, A: 255}, false)
 	vector.StrokeRect(screen, 220, 95, 360, 410, 2, color.RGBA{R: 0, G: 200, B: 255, A: 255}, false)
 
 	ebitenutil.DebugPrintAt(screen, "=== MAINFRAME SUSPENDED (PAUSED) ===", 260, 120)
@@ -591,31 +589,31 @@ func (u *UI) DrawPauseMenu(screen *ebiten.Image) {
 
 	// 1. Resume
 	b1Y := float32(160)
-	vector.DrawFilledRect(screen, btnX, b1Y, btnW, btnH, color.RGBA{R: 30, G: 60, B: 90, A: 255}, false)
+	vector.FillRect(screen, btnX, b1Y, btnW, btnH, color.RGBA{R: 30, G: 60, B: 90, A: 255}, false)
 	vector.StrokeRect(screen, btnX, b1Y, btnW, btnH, 1.5, color.RGBA{R: 0, G: 220, B: 255, A: 255}, false)
 	ebitenutil.DebugPrintAt(screen, "[ RESUME RUN ] (ESC)", 335, int(b1Y)+14)
 
 	// 2. Settings
 	b2Y := float32(215)
-	vector.DrawFilledRect(screen, btnX, b2Y, btnW, btnH, color.RGBA{R: 35, G: 30, B: 52, A: 255}, false)
+	vector.FillRect(screen, btnX, b2Y, btnW, btnH, color.RGBA{R: 35, G: 30, B: 52, A: 255}, false)
 	vector.StrokeRect(screen, btnX, b2Y, btnW, btnH, 1.5, color.RGBA{R: 160, G: 110, B: 240, A: 255}, false)
 	ebitenutil.DebugPrintAt(screen, "[ DISPLAY & SETTINGS ]", 325, int(b2Y)+14)
 
 	// 3. Save & Exit
 	b3Y := float32(270)
-	vector.DrawFilledRect(screen, btnX, b3Y, btnW, btnH, color.RGBA{R: 35, G: 50, B: 75, A: 255}, false)
+	vector.FillRect(screen, btnX, b3Y, btnW, btnH, color.RGBA{R: 35, G: 50, B: 75, A: 255}, false)
 	vector.StrokeRect(screen, btnX, b3Y, btnW, btnH, 1.5, color.RGBA{R: 80, G: 200, B: 255, A: 255}, false)
 	ebitenutil.DebugPrintAt(screen, "[ SAVE & EXIT TO SLOTS ]", 315, int(b3Y)+14)
 
 	// 4. Abandon
 	b4Y := float32(325)
-	vector.DrawFilledRect(screen, btnX, b4Y, btnW, btnH, color.RGBA{R: 45, G: 35, B: 55, A: 255}, false)
+	vector.FillRect(screen, btnX, b4Y, btnW, btnH, color.RGBA{R: 45, G: 35, B: 55, A: 255}, false)
 	vector.StrokeRect(screen, btnX, b4Y, btnW, btnH, 1.5, color.RGBA{R: 255, G: 120, B: 150, A: 255}, false)
 	ebitenutil.DebugPrintAt(screen, "[ ABANDON & RESTART RUN ]", 310, int(b4Y)+14)
 
 	// 5. Meta-Shop
 	b5Y := float32(380)
-	vector.DrawFilledRect(screen, btnX, b5Y, btnW, btnH, color.RGBA{R: 35, G: 45, B: 65, A: 255}, false)
+	vector.FillRect(screen, btnX, b5Y, btnW, btnH, color.RGBA{R: 35, G: 45, B: 65, A: 255}, false)
 	vector.StrokeRect(screen, btnX, b5Y, btnW, btnH, 1.5, color.RGBA{R: 160, G: 120, B: 255, A: 255}, false)
 	ebitenutil.DebugPrintAt(screen, "[ ROOT ACCESS ARCHIVE ]", 320, int(b5Y)+14)
 }
@@ -624,7 +622,7 @@ func (u *UI) DrawSlotSelectScreen(screen *ebiten.Image, sm *save.SaveManager, cx
 	screen.Fill(color.RGBA{R: 10, G: 14, B: 22, A: 255})
 
 	// Header
-	vector.DrawFilledRect(screen, 0, 0, 800, 75, color.RGBA{R: 16, G: 22, B: 34, A: 255}, false)
+	vector.FillRect(screen, 0, 0, 800, 75, color.RGBA{R: 16, G: 22, B: 34, A: 255}, false)
 	vector.StrokeLine(screen, 0, 75, 800, 75, 2, color.RGBA{R: 0, G: 200, B: 255, A: 255}, false)
 
 	// Back button
@@ -637,7 +635,7 @@ func (u *UI) DrawSlotSelectScreen(screen *ebiten.Image, sm *save.SaveManager, cx
 	if hoverBack {
 		bgBack = color.RGBA{R: 40, G: 55, B: 80, A: 255}
 	}
-	vector.DrawFilledRect(screen, btnBackX, btnBackY, btnBackW, btnBackH, bgBack, false)
+	vector.FillRect(screen, btnBackX, btnBackY, btnBackW, btnBackH, bgBack, false)
 	vector.StrokeRect(screen, btnBackX, btnBackY, btnBackW, btnBackH, 1.5, color.RGBA{R: 0, G: 180, B: 240, A: 255}, false)
 	ebitenutil.DebugPrintAt(screen, "< MAIN MENU [ESC]", int(btnBackX)+15, int(btnBackY)+12)
 
@@ -654,7 +652,7 @@ func (u *UI) DrawSlotSelectScreen(screen *ebiten.Image, sm *save.SaveManager, cx
 		slot := sm.Slots[i]
 		cardY := startY + float32(i)*(cardH+gap)
 
-		vector.DrawFilledRect(screen, 40, cardY, cardW, cardH, color.RGBA{R: 18, G: 24, B: 36, A: 255}, false)
+		vector.FillRect(screen, 40, cardY, cardW, cardH, color.RGBA{R: 18, G: 24, B: 36, A: 255}, false)
 		borderColor := color.RGBA{R: 50, G: 70, B: 100, A: 255}
 		if slot.Exists {
 			borderColor = color.RGBA{R: 0, G: 180, B: 240, A: 255}
@@ -701,7 +699,7 @@ func (u *UI) DrawSlotSelectScreen(screen *ebiten.Image, sm *save.SaveManager, cx
 			playText = "[ LAUNCH RUN ]"
 		}
 
-		vector.DrawFilledRect(screen, btnPlayX, btnPlayY, btnPlayW, btnPlayH, color.RGBA{R: 20, G: 70, B: 110, A: 255}, false)
+		vector.FillRect(screen, btnPlayX, btnPlayY, btnPlayW, btnPlayH, color.RGBA{R: 20, G: 70, B: 110, A: 255}, false)
 		vector.StrokeRect(screen, btnPlayX, btnPlayY, btnPlayW, btnPlayH, 1.5, color.RGBA{R: 0, G: 220, B: 255, A: 255}, false)
 		ebitenutil.DebugPrintAt(screen, playText, int(btnPlayX)+28, int(btnPlayY)+14)
 
@@ -711,14 +709,14 @@ func (u *UI) DrawSlotSelectScreen(screen *ebiten.Image, sm *save.SaveManager, cx
 			btnDelW := float32(180)
 			btnDelH := float32(38)
 
-			vector.DrawFilledRect(screen, btnDelX, btnDelY, btnDelW, btnDelH, color.RGBA{R: 45, G: 25, B: 35, A: 255}, false)
+			vector.FillRect(screen, btnDelX, btnDelY, btnDelW, btnDelH, color.RGBA{R: 45, G: 25, B: 35, A: 255}, false)
 			vector.StrokeRect(screen, btnDelX, btnDelY, btnDelW, btnDelH, 1.5, color.RGBA{R: 255, G: 70, B: 90, A: 255}, false)
 			ebitenutil.DebugPrintAt(screen, "[ DELETE PROFILE ]", int(btnDelX)+20, int(btnDelY)+12)
 		}
 	}
 
 	// Bottom Bar
-	vector.DrawFilledRect(screen, 0, 540, 800, 60, color.RGBA{R: 16, G: 22, B: 34, A: 255}, false)
+	vector.FillRect(screen, 0, 540, 800, 60, color.RGBA{R: 16, G: 22, B: 34, A: 255}, false)
 	vector.StrokeLine(screen, 0, 540, 800, 540, 1.5, color.RGBA{R: 0, G: 160, B: 200, A: 255}, false)
 	ebitenutil.DebugPrintAt(screen, "[ Profiles are automatically preserved in compressed binary storage ]", 185, 562)
 }
@@ -742,7 +740,7 @@ func (u *UI) DrawMetaShop(screen *ebiten.Image, metaMgr *meta.MetaManager, scrol
 		cost := t.CurrentCost()
 		canBuy := cost > 0 && metaMgr.GlitchShards >= cost
 
-		vector.DrawFilledRect(screen, 35, cardY, cardW, cardH, color.RGBA{R: 20, G: 26, B: 38, A: 255}, false)
+		vector.FillRect(screen, 35, cardY, cardW, cardH, color.RGBA{R: 20, G: 26, B: 38, A: 255}, false)
 		vector.StrokeRect(screen, 35, cardY, cardW, cardH, 1.5, color.RGBA{R: 50, G: 70, B: 100, A: 255}, false)
 
 		levelStr := fmt.Sprintf("Rank %d/%d", t.Level, t.MaxLevel)
@@ -761,7 +759,7 @@ func (u *UI) DrawMetaShop(screen *ebiten.Image, metaMgr *meta.MetaManager, scrol
 		if !canBuy {
 			btnBg = color.RGBA{R: 25, G: 28, B: 35, A: 255}
 		}
-		vector.DrawFilledRect(screen, btnX, btnY, btnW, btnH, btnBg, false)
+		vector.FillRect(screen, btnX, btnY, btnW, btnH, btnBg, false)
 
 		btnBorder := color.RGBA{R: 0, G: 200, B: 255, A: 255}
 		if !canBuy {
@@ -785,7 +783,7 @@ func (u *UI) DrawMetaShop(screen *ebiten.Image, metaMgr *meta.MetaManager, scrol
 		trackW := float32(6)
 		trackH := viewportH
 
-		vector.DrawFilledRect(screen, trackX, trackY, trackW, trackH, color.RGBA{R: 20, G: 28, B: 40, A: 200}, false)
+		vector.FillRect(screen, trackX, trackY, trackW, trackH, color.RGBA{R: 20, G: 28, B: 40, A: 200}, false)
 
 		maxScroll := totalContent - viewportH
 		thumbH := float32(math.Max(40, float64(viewportH*(viewportH/totalContent))))
@@ -795,18 +793,18 @@ func (u *UI) DrawMetaShop(screen *ebiten.Image, metaMgr *meta.MetaManager, scrol
 		}
 		thumbY := trackY + (trackH-thumbH)*scrollRatio
 
-		vector.DrawFilledRect(screen, trackX, thumbY, trackW, thumbH, color.RGBA{R: 0, G: 200, B: 255, A: 255}, false)
+		vector.FillRect(screen, trackX, thumbY, trackW, thumbH, color.RGBA{R: 0, G: 200, B: 255, A: 255}, false)
 	}
 
 	// Fixed Header
-	vector.DrawFilledRect(screen, 0, 0, 800, 75, color.RGBA{R: 16, G: 22, B: 34, A: 255}, false)
+	vector.FillRect(screen, 0, 0, 800, 75, color.RGBA{R: 16, G: 22, B: 34, A: 255}, false)
 	vector.StrokeLine(screen, 0, 75, 800, 75, 2, color.RGBA{R: 160, G: 70, B: 255, A: 255}, false)
 
 	ebitenutil.DebugPrintAt(screen, "=== ROOT ACCESS: MOTHERBOARD ARCHITECTURE ARCHIVE ===", 210, 16)
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Archived Glitch Shards: %d  (Scroll with Wheel / Arrow Keys / W & S)", metaMgr.GlitchShards), 150, 42)
 
 	// Fixed Bottom Bar: Start Run
-	vector.DrawFilledRect(screen, 0, 530, 800, 70, color.RGBA{R: 16, G: 22, B: 34, A: 255}, false)
+	vector.FillRect(screen, 0, 530, 800, 70, color.RGBA{R: 16, G: 22, B: 34, A: 255}, false)
 	vector.StrokeLine(screen, 0, 530, 800, 530, 2, color.RGBA{R: 0, G: 200, B: 255, A: 255}, false)
 
 	startBtnX := float32(280)
@@ -814,7 +812,7 @@ func (u *UI) DrawMetaShop(screen *ebiten.Image, metaMgr *meta.MetaManager, scrol
 	startBtnW := float32(240)
 	startBtnH := float32(42)
 
-	vector.DrawFilledRect(screen, startBtnX, startBtnY, startBtnW, startBtnH, color.RGBA{R: 20, G: 80, B: 120, A: 255}, false)
+	vector.FillRect(screen, startBtnX, startBtnY, startBtnW, startBtnH, color.RGBA{R: 20, G: 80, B: 120, A: 255}, false)
 	vector.StrokeRect(screen, startBtnX, startBtnY, startBtnW, startBtnH, 2, color.RGBA{R: 60, G: 240, B: 255, A: 255}, false)
 	ebitenutil.DebugPrintAt(screen, "[ BOOT RUN ] (SPACE)", int(startBtnX)+50, int(startBtnY)+15)
 }

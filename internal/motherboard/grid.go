@@ -213,7 +213,7 @@ func (g *Grid) Draw(screen *ebiten.Image) {
 	// Motherboard Background
 	boardW := float32(Cols * CellSize)
 	boardH := float32(Rows * CellSize)
-	vector.DrawFilledRect(screen, OffsetX-4, OffsetY-4, boardW+8, boardH+8, color.RGBA{R: 12, G: 16, B: 24, A: 255}, false)
+	vector.FillRect(screen, OffsetX-4, OffsetY-4, boardW+8, boardH+8, color.RGBA{R: 12, G: 16, B: 24, A: 255}, false)
 	vector.StrokeRect(screen, OffsetX-4, OffsetY-4, boardW+8, boardH+8, 2, color.RGBA{R: 0, G: 180, B: 200, A: 255}, false)
 
 	// Draw Grid Lines & Traces
@@ -249,7 +249,7 @@ func (g *Grid) Draw(screen *ebiten.Image) {
 		sx := float32(OffsetX + sp.X*CellSize)
 		sy := float32(OffsetY + sp.Y*CellSize)
 		sz := float32(CellSize)
-		vector.DrawFilledRect(screen, sx+2, sy+2, sz-4, sz-4, color.RGBA{R: 200, G: 40, B: 60, A: 200}, false)
+		vector.FillRect(screen, sx+2, sy+2, sz-4, sz-4, color.RGBA{R: 200, G: 40, B: 60, A: 200}, false)
 		vector.StrokeRect(screen, sx+2, sy+2, sz-4, sz-4, 1.5, color.RGBA{R: 255, G: 100, B: 120, A: 255}, false)
 	}
 
@@ -257,10 +257,10 @@ func (g *Grid) Draw(screen *ebiten.Image) {
 	csx := float32(OffsetX + g.CorePos.X*CellSize)
 	csy := float32(OffsetY + g.CorePos.Y*CellSize)
 	csz := float32(CellSize)
-	vector.DrawFilledRect(screen, csx+2, csy+2, csz-4, csz-4, color.RGBA{R: 0, G: 160, B: 240, A: 255}, false)
+	vector.FillRect(screen, csx+2, csy+2, csz-4, csz-4, color.RGBA{R: 0, G: 160, B: 240, A: 255}, false)
 	vector.StrokeRect(screen, csx+1, csy+1, csz-2, csz-2, 2, color.RGBA{R: 160, G: 240, B: 255, A: 255}, false)
 
 	// Draw Core Pulse
 	pulse := float32((math.Sin(g.TraceOffset*0.1) + 1.0) * 0.5)
-	vector.DrawFilledCircle(screen, csx+csz/2, csy+csz/2, 6+pulse*3, color.RGBA{R: 255, G: 255, B: 255, A: 230}, false)
+	vector.FillCircle(screen, csx+csz/2, csy+csz/2, 6+pulse*3, color.RGBA{R: 255, G: 255, B: 255, A: 230}, false)
 }

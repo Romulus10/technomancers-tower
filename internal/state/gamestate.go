@@ -277,13 +277,13 @@ func (gs *GameState) SaveActiveRunState() {
 		UnlockedSpells:  unlockedSpells,
 	}
 
-	gs.Meta.SaveActiveSlot()
+	_ = gs.Meta.SaveActiveSlot()
 }
 
 func (gs *GameState) ClearActiveRunSnapshot() {
 	if gs.Meta.CurrentSlotData != nil {
 		gs.Meta.CurrentSlotData.HasActiveRun = false
-		gs.Meta.SaveActiveSlot()
+		_ = gs.Meta.SaveActiveSlot()
 	}
 }
 
@@ -592,7 +592,7 @@ func (gs *GameState) updateCodex(cx, cy int, justClicked bool) {
 		// Reset Defaults
 		if cx >= 290 && cx <= 510 && cy >= 505 && cy <= 545 {
 			gs.KeyMgr.ResetDefaults()
-			gs.KeyMgr.Save()
+			_ = gs.KeyMgr.Save()
 			return
 		}
 
@@ -645,7 +645,7 @@ func (gs *GameState) updateSlotSelect(cx, cy int, justClicked bool) {
 		if gs.SaveMgr.Slots[i].Exists {
 			btnDelY := cardY + 70
 			if cx >= 560 && cx <= 740 && cy >= btnDelY && cy <= btnDelY+38 {
-				gs.SaveMgr.DeleteSlot(slotID)
+				_ = gs.SaveMgr.DeleteSlot(slotID)
 				return
 			}
 		}
@@ -843,7 +843,7 @@ func (gs *GameState) Draw(screen *ebiten.Image) {
 			coreX, coreY := gs.Grid.GridToScreenCenter(gs.Grid.CorePos.X, gs.Grid.CorePos.Y)
 			flashR := float32(28.0 + (0.25-gs.CoreHitFlash)*40.0)
 			vector.StrokeCircle(screen, float32(coreX), float32(coreY), flashR, 3, color.RGBA{R: 255, G: 50, B: 70, A: 240}, false)
-			vector.DrawFilledCircle(screen, float32(coreX), float32(coreY), float32(motherboard.CellSize*0.6), color.RGBA{R: 255, G: 0, B: 50, A: 160}, false)
+			vector.FillCircle(screen, float32(coreX), float32(coreY), float32(motherboard.CellSize*0.6), color.RGBA{R: 255, G: 0, B: 50, A: 160}, false)
 		}
 
 		gs.Towers.Draw(screen)
