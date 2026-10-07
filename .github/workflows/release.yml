@@ -1,0 +1,117 @@
+name: Release Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build & Release Artifacts
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            goos: darwin
+            goarch: arm64
+            artifact_name: technomancers-tower-darwin-arm64.zip
+            binary_name: technomancers-tower
+          - os: macos-latest
+            goos: darwin
+            goarch: amd64
+            artifact_name: technomancers-tower-darwin-amd64.zip
+            binary_name: technomancers-tower
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+            artifact_name: technomancers-tower-linux-amd64.tar.gz
+            binary_name: technomancers-tower
+          - os: windows-latest
+            goos: windows
+            goarch: amd64
+            artifact_name: technomancers-tower-windows-amd64.zip
+            binary_name: technomancers-tower.exe
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+          cache: true
+
+      - name: Install Linux Dependencies
+        if: matrix.goos == 'linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            libasound2-dev \
+            libgl1-mesa-dev \
+            libxcursor-dev \
+            libxi-dev \
+            libxinerama-dev \
+            libxrandr-dev \
+            libxxf86vm-dev
+
+      - name: Build Binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: ${{ matrix.goos == 'linux' && '1' || '0' }}
+        run: |
+          go build -ldflags "-s -w -X technomancers-tower/internal/config.Version=${{ github.ref_name }}" -o ${{ matrix.binary_name }} .
+
+      - name: Package macOS / Windows Archive (.zip)
+        if: matrix.goos == 'darwin' || matrix.goos == 'windows'
+        shell: bash
+        run: |
+          zip -9 -r ${{ matrix.artifact_name }} ${{ matrix.binary_name }}
+
+      - name: Package Linux Archive (.tar.gz)
+        if: matrix.goos == 'linux'
+        run: |
+          tar -czvf ${{ matrix.artifact_name }} ${{ matrix.binary_name }}
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_name }}
+
+  publish-release:
+    name: Publish GitHub Release
+    needs: build-and-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download All Built Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Generate Checksums
+        working-directory: dist
+        run: |
+          sha256sum * > SHA256SUMS.txt
+          echo "### Release Checksums" >> $GITHUB_STEP_SUMMARY
+          cat SHA256SUMS.txt >> $GITHUB_STEP_SUMMARY
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*
+          tag_name: ${{ github.ref_name }}
+          name: "Technomancer's Tower ${{ github.ref_name }}"
+          draft: false
+          prerelease: false
+          generate_release_notes: true

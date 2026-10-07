@@ -1,0 +1,24 @@
+# Binaries and build outputs
+/technomancers-tower
+/technomancers-tower.exe
+*.exe
+*.dll
+*.so
+*.dylib
+dist/
+build/
+bin/
+
+# Temporary and log files
+*.log
+*.tmp
+*.out
+coverage.out
+
+# Local Save & Settings directory
+.technomancers-tower/
+
+# IDE & Editor folders
+.vscode/
+.idea/
+.DS_Store
