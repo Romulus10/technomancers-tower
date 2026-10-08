@@ -178,10 +178,8 @@ func (dm *DraftManager) Draw(screen *ebiten.Image) {
 
 		// Card background & holographic frame
 		bgColor := color.RGBA{R: 18, G: 24, B: 36, A: 255}
-		borderColor := card.Color
-		if !isHovered {
-			borderColor = gfx.FadeAlpha(card.Color, 0.7)
-		} else {
+		borderColor := gfx.FadeAlpha(card.Color, 0.7)
+		if isHovered {
 			bgColor = color.RGBA{R: 28, G: 38, B: 58, A: 255}
 			borderColor = gfx.Brighten(card.Color, 0.3)
 		}
