@@ -23,11 +23,12 @@ import (
 
 // UI manages the HUD, toolbar, placement previews, shop, pause, title, and slot select screens.
 type UI struct {
-	SelectedTower     string
-	HasTowerSelected  bool
-	SelectedSpell     string
-	HasSpellSelected  bool
-	HoveredShopTalent string
+	SelectedTower      string
+	HasTowerSelected   bool
+	SelectedSpell      string
+	HasSpellSelected   bool
+	HoveredShopTalent  string
+	ActiveShopCategory int
 }
 
 func NewUI() *UI {
@@ -704,60 +705,91 @@ func (u *UI) DrawSlotSelectScreen(screen *ebiten.Image, sm *save.SaveManager, cx
 func (u *UI) DrawMetaShop(screen *ebiten.Image, metaMgr *meta.MetaManager, scrollY float64, cx, cy int) {
 	screen.Fill(color.RGBA{R: 12, G: 16, B: 24, A: 255})
 
-	// List Talents with Scroll Offset
-	startY := float32(90.0)
-	cardH := float32(65.0)
-	gap := float32(10.0)
-	cardW := float32(710.0)
+	if u.ActiveShopCategory < 0 || u.ActiveShopCategory >= len(meta.AllCategories) {
+		u.ActiveShopCategory = 0
+	}
+	currentCat := meta.AllCategories[u.ActiveShopCategory]
+	talents := metaMgr.GetTalentsByCategory(currentCat)
 
-	for i, t := range metaMgr.Talents {
+	// 1. List Talents with Scroll Offset
+	startY := float32(122.0)
+	cardH := float32(68.0)
+	gap := float32(8.0)
+	cardW := float32(720.0)
+
+	for i, t := range talents {
 		cardY := startY + float32(i)*(cardH+gap) - float32(scrollY)
 
-		if cardY+cardH < 75 || cardY > 530 {
+		if cardY+cardH < 118 || cardY > 528 {
 			continue
 		}
 
 		cost := t.CurrentCost()
 		canBuy := cost > 0 && metaMgr.GlitchShards >= cost
+		canRefund := t.Level > 0
 
-		gfx.DrawHolographicPanel(screen, 35, cardY, cardW, cardH, color.RGBA{R: 50, G: 70, B: 100, A: 255}, gfx.ColorPanelDark)
+		cardBg := gfx.ColorPanelDark
+		cardBorder := color.RGBA{R: 50, G: 70, B: 100, A: 255}
+		if t.Level > 0 {
+			cardBorder = gfx.FadeAlpha(gfx.ColorCyanNeon, 0.45)
+		}
+		gfx.DrawHolographicPanel(screen, 35, cardY, cardW, cardH, cardBorder, cardBg)
 
 		levelStr := fmt.Sprintf("Rank %d/%d", t.Level, t.MaxLevel)
 		if t.Level >= t.MaxLevel {
 			levelStr = "MAXED"
 		}
-		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%s (%s)", t.Name, levelStr), 55, int(cardY)+12)
-		ebitenutil.DebugPrintAt(screen, t.Description, 55, int(cardY)+34)
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%s (%s)", t.Name, levelStr), 50, int(cardY)+12)
+		ebitenutil.DebugPrintAt(screen, t.Description, 50, int(cardY)+36)
 
-		btnX := float32(585)
-		btnY := cardY + 12
-		btnW := float32(145)
-		btnH := float32(40)
+		// Buy Button
+		btnBuyX := float32(535)
+		btnBuyY := cardY + 12
+		btnBuyW := float32(110)
+		btnBuyH := float32(44)
 
-		btnBg := color.RGBA{R: 35, G: 55, B: 85, A: 255}
+		btnBuyBg := color.RGBA{R: 25, G: 55, B: 85, A: 255}
+		btnBuyBorder := gfx.ColorCyanNeon
 		if !canBuy {
-			btnBg = color.RGBA{R: 25, G: 28, B: 35, A: 255}
+			btnBuyBg = color.RGBA{R: 20, G: 24, B: 30, A: 255}
+			btnBuyBorder = color.RGBA{R: 50, G: 60, B: 75, A: 180}
 		}
-
-		btnBorder := gfx.ColorCyanNeon
-		if !canBuy {
-			btnBorder = color.RGBA{R: 60, G: 70, B: 85, A: 200}
-		}
-		gfx.DrawHolographicPanel(screen, btnX, btnY, btnW, btnH, btnBorder, btnBg)
+		gfx.DrawHolographicPanel(screen, btnBuyX, btnBuyY, btnBuyW, btnBuyH, btnBuyBorder, btnBuyBg)
 
 		if cost > 0 {
-			ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Upgrade (%d Shards)", cost), int(btnX)+8, int(btnY)+14)
+			ebitenutil.DebugPrintAt(screen, fmt.Sprintf("[+] BUY\n(%d Shards)", cost), int(btnBuyX)+12, int(btnBuyY)+8)
 		} else {
-			ebitenutil.DebugPrintAt(screen, "MAX RANK", int(btnX)+38, int(btnY)+14)
+			ebitenutil.DebugPrintAt(screen, "MAX RANK", int(btnBuyX)+22, int(btnBuyY)+16)
+		}
+
+		// Refund Button
+		btnRefX := float32(655)
+		btnRefY := cardY + 12
+		btnRefW := float32(90)
+		btnRefH := float32(44)
+
+		btnRefBg := color.RGBA{R: 70, G: 35, B: 25, A: 255}
+		btnRefBorder := gfx.ColorCrimsonGlitch
+		if !canRefund {
+			btnRefBg = color.RGBA{R: 20, G: 24, B: 30, A: 255}
+			btnRefBorder = color.RGBA{R: 50, G: 60, B: 75, A: 180}
+		}
+		gfx.DrawHolographicPanel(screen, btnRefX, btnRefY, btnRefW, btnRefH, btnRefBorder, btnRefBg)
+
+		if canRefund {
+			refundCost := t.PreviousRankCost()
+			ebitenutil.DebugPrintAt(screen, fmt.Sprintf("[-] REFUND\n(+%d)", refundCost), int(btnRefX)+8, int(btnRefY)+8)
+		} else {
+			ebitenutil.DebugPrintAt(screen, "[-] 0", int(btnRefX)+26, int(btnRefY)+16)
 		}
 	}
 
-	// Scrollbar Track & Thumb (Right side)
-	totalContent := float32(len(metaMgr.Talents)*(int(cardH)+int(gap)) + 20)
-	viewportH := float32(440.0)
+	// 2. Scrollbar Track & Thumb (Right side)
+	totalContent := float32(len(talents)*(int(cardH)+int(gap)) + 20)
+	viewportH := float32(410.0)
 	if totalContent > viewportH {
-		trackX := float32(760)
-		trackY := float32(85)
+		trackX := float32(768)
+		trackY := float32(120)
 		trackW := float32(6)
 		trackH := viewportH
 
@@ -774,22 +806,68 @@ func (u *UI) DrawMetaShop(screen *ebiten.Image, metaMgr *meta.MetaManager, scrol
 		vector.FillRect(screen, trackX, thumbY, trackW, thumbH, gfx.ColorCyanNeon, false)
 	}
 
-	// Fixed Header
-	gfx.DrawHolographicPanel(screen, 0, 0, 800, 75, gfx.ColorPurpleArcane, gfx.ColorPanelDark)
+	// 3. Category Tab Bar (Horizontal at top: Y: 75..112)
+	gfx.DrawHolographicPanel(screen, 0, 72, 800, 44, gfx.ColorPanelBorder, color.RGBA{R: 10, G: 14, B: 22, A: 255})
+	tabStartX := float32(35)
+	tabW := float32(142)
+	tabH := float32(34)
+	tabGap := float32(5)
 
-	ebitenutil.DebugPrintAt(screen, "=== ROOT ACCESS: MOTHERBOARD ARCHITECTURE ARCHIVE ===", 210, 16)
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Archived Glitch Shards: %d  (Scroll with Wheel / Arrow Keys / W & S)", metaMgr.GlitchShards), 150, 42)
+	for catIdx, cat := range meta.AllCategories {
+		tx := tabStartX + float32(catIdx)*(tabW+tabGap)
+		ty := float32(77)
 
-	// Fixed Bottom Bar: Start Run
-	gfx.DrawHolographicPanel(screen, 0, 530, 800, 70, gfx.ColorCyanNeon, gfx.ColorPanelDark)
+		isSelected := catIdx == u.ActiveShopCategory
+		tBg := color.RGBA{R: 18, G: 24, B: 36, A: 255}
+		tBorder := color.RGBA{R: 50, G: 65, B: 85, A: 200}
+		if isSelected {
+			tBg = color.RGBA{R: 25, G: 60, B: 95, A: 255}
+			tBorder = gfx.ColorCyanNeon
+		}
 
-	startBtnX := float32(280)
+		gfx.DrawHolographicPanel(screen, tx, ty, tabW, tabH, tBorder, tBg)
+		tabLabel := fmt.Sprintf("[%d] %s", catIdx+1, cat)
+		ebitenutil.DebugPrintAt(screen, tabLabel, int(tx)+18, int(ty)+10)
+	}
+
+	// 4. Fixed Header: Title, Shards, and Reset All button
+	gfx.DrawHolographicPanel(screen, 0, 0, 800, 72, gfx.ColorPurpleArcane, gfx.ColorPanelDark)
+
+	ebitenutil.DebugPrintAt(screen, "=== ROOT ACCESS: MOTHERBOARD ARCHITECTURE ARCHIVE ===", 170, 14)
+	totalInvested := metaMgr.TotalInvestedShards()
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Archived Shards: %d  |  Total Invested: %d", metaMgr.GlitchShards, totalInvested), 170, 38)
+
+	// Reset All Talents Button
+	resetBtnX := float32(595)
+	resetBtnY := float32(16)
+	resetBtnW := float32(170)
+	resetBtnH := float32(38)
+	resetBorder := gfx.ColorCrimsonGlitch
+	resetBg := color.RGBA{R: 45, G: 20, B: 25, A: 255}
+	if totalInvested == 0 {
+		resetBorder = color.RGBA{R: 60, G: 60, B: 70, A: 160}
+		resetBg = color.RGBA{R: 20, G: 20, B: 25, A: 255}
+	}
+	gfx.DrawHolographicPanel(screen, resetBtnX, resetBtnY, resetBtnW, resetBtnH, resetBorder, resetBg)
+	ebitenutil.DebugPrintAt(screen, "[ RESET ALL TALENTS ]", int(resetBtnX)+10, int(resetBtnY)+12)
+
+	// 5. Fixed Bottom Bar: Start Run and Controls
+	gfx.DrawHolographicPanel(screen, 0, 532, 800, 68, gfx.ColorCyanNeon, gfx.ColorPanelDark)
+
+	// Left info
+	ebitenutil.DebugPrintAt(screen, "[1-5] / [Q/E]: Tabs", 45, 558)
+
+	// Center Boot Run button
+	startBtnX := float32(275)
 	startBtnY := float32(545)
-	startBtnW := float32(240)
+	startBtnW := float32(250)
 	startBtnH := float32(42)
 
 	gfx.DrawHolographicPanel(screen, startBtnX, startBtnY, startBtnW, startBtnH, gfx.ColorCyanNeon, color.RGBA{R: 20, G: 80, B: 120, A: 255})
-	ebitenutil.DebugPrintAt(screen, "[ BOOT RUN ] (SPACE)", int(startBtnX)+50, int(startBtnY)+15)
+	ebitenutil.DebugPrintAt(screen, "[ BOOT RUN ] (SPACE)", int(startBtnX)+52, int(startBtnY)+15)
+
+	// Right info
+	ebitenutil.DebugPrintAt(screen, "[W/S] / Wheel: Scroll", 575, 558)
 }
 
 func min(a, b int) int {

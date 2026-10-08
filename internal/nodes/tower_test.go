@@ -16,7 +16,7 @@ func TestTowerBuildingAndManaRecalculation(t *testing.T) {
 	reg := data.NewRegistry()
 	tm := nodes.NewTowerManager(reg)
 	grid := motherboard.NewGrid()
-	run := economy.NewRunState(0, 0, 0, 0, 0, 0, 0, 0, 0) // 120 starting bytes
+	run := economy.NewRunState(nil) // 120 starting bytes
 
 	// 1. Build Bit Driver (Cost 30)
 	success := tm.BuildTower("bit_driver", 2, 2, grid, run)
@@ -46,7 +46,7 @@ func TestTowerAttacksAndOnHitPipeline(t *testing.T) {
 	tm := nodes.NewTowerManager(reg)
 	spawner := malware.NewSpawner(reg)
 	grid := motherboard.NewGrid()
-	run := economy.NewRunState(0, 0, 0, 0, 0, 0, 0, 0, 0)
+	run := economy.NewRunState(nil)
 	run.Bytes = 1000
 
 	built := tm.BuildTower("bit_driver", 1, 1, grid, run)
@@ -96,7 +96,7 @@ func TestTowerLevelProgressionAndStatScaling(t *testing.T) {
 	reg := data.NewRegistry()
 	tm := nodes.NewTowerManager(reg)
 	grid := motherboard.NewGrid()
-	run := economy.NewRunState(0, 0, 0, 0, 0, 0, 0, 0, 0)
+	run := economy.NewRunState(nil)
 	run.Bytes = 1000
 
 	// 1. Test Combat Tower Leveling
@@ -166,7 +166,7 @@ func TestTowerOverclockPromotionAndTierScaling(t *testing.T) {
 	reg := data.NewRegistry()
 	tm := nodes.NewTowerManager(reg)
 	grid := motherboard.NewGrid()
-	run := economy.NewRunState(0, 0, 0, 0, 0, 0, 0, 0, 0)
+	run := economy.NewRunState(nil)
 	run.Bytes = 500
 
 	tm.BuildTower("bit_driver", 2, 2, grid, run)
@@ -251,7 +251,7 @@ func TestTowerPromoteAllBatchUpgrade(t *testing.T) {
 	reg := data.NewRegistry()
 	tm := nodes.NewTowerManager(reg)
 	grid := motherboard.NewGrid()
-	run := economy.NewRunState(0, 0, 0, 0, 0, 0, 0, 0, 0)
+	run := economy.NewRunState(nil)
 	run.Bytes = 1000
 
 	// Build 3 towers: 2 Bit Drivers (BaseCost 30) + 1 Tesla Bus (BaseCost 75)
