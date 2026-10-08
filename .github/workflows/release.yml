@@ -68,11 +68,16 @@ jobs:
         run: |
           go build -ldflags "-s -w -X technomancers-tower/internal/config.Version=${{ github.ref_name }}" -o ${{ matrix.binary_name }} .
 
-      - name: Package macOS / Windows Archive (.zip)
-        if: matrix.goos == 'darwin' || matrix.goos == 'windows'
-        shell: bash
+      - name: Package macOS Archive (.zip)
+        if: matrix.goos == 'darwin'
         run: |
           zip -9 -r ${{ matrix.artifact_name }} ${{ matrix.binary_name }}
+
+      - name: Package Windows Archive (.zip)
+        if: matrix.goos == 'windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path ${{ matrix.binary_name }} -DestinationPath ${{ matrix.artifact_name }} -Force
 
       - name: Package Linux Archive (.tar.gz)
         if: matrix.goos == 'linux'
