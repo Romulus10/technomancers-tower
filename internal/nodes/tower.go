@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"math"
+	"math/rand"
 
 	"technomancers-tower/internal/data"
 	"technomancers-tower/internal/economy"
@@ -390,11 +391,16 @@ func (tm *TowerManager) Update(dt float64, enemies []*malware.Enemy, run *econom
 
 // ApplyOnHits executes all configured OnHitEffects (Damage, Splash, Slow, Freeze, Chain) and attributes XP.
 func (tm *TowerManager) ApplyOnHits(sourceTowerID int, effects []data.OnHitEffect, target *malware.Enemy, enemies []*malware.Enemy, run *economy.RunState, dmgMult float64, originX, originY float64, spawner *malware.Spawner) {
+	effectiveDmgMult := dmgMult
+	if run != nil && run.TowerCritChance > 0 && rand.Float64() < run.TowerCritChance {
+		effectiveDmgMult *= run.TowerCritMult
+	}
+
 	for _, eff := range effects {
 		switch eff.Type {
 		case data.OnHitDamage:
 			if target != nil && !target.IsDead {
-				dmg := eff.Damage * dmgMult
+				dmg := eff.Damage * effectiveDmgMult
 				if target.TakeDamage(dmg, spawner) {
 					run.AddKill(target.Bounty, target.XP, target.Type == malware.TypeBoss)
 					tm.AddTowerXP(sourceTowerID, dmg+float64(target.XP)*5.0, run)
@@ -414,7 +420,7 @@ func (tm *TowerManager) ApplyOnHits(sourceTowerID int, effects []data.OnHitEffec
 					if falloff < 0.35 {
 						falloff = 0.35
 					}
-					dmg := eff.Damage * dmgMult * falloff
+					dmg := eff.Damage * effectiveDmgMult * falloff
 					if e.TakeDamage(dmg, spawner) {
 						run.AddKill(e.Bounty, e.XP, e.Type == malware.TypeBoss)
 						tm.AddTowerXP(sourceTowerID, dmg+float64(e.XP)*5.0, run)
@@ -426,12 +432,20 @@ func (tm *TowerManager) ApplyOnHits(sourceTowerID int, effects []data.OnHitEffec
 
 		case data.OnHitSlow:
 			if target != nil && !target.IsDead {
-				target.ApplySlow(eff.SlowFactor, eff.SlowDuration)
+				slowDur := eff.SlowDuration
+				if run != nil && run.StatusDurationMult > 0 {
+					slowDur *= run.StatusDurationMult
+				}
+				target.ApplySlow(eff.SlowFactor, slowDur)
 			}
 
 		case data.OnHitFreeze:
 			if target != nil && !target.IsDead {
-				target.ApplyFreeze(eff.FreezeSeconds)
+				freezeSec := eff.FreezeSeconds
+				if run != nil && run.StatusDurationMult > 0 {
+					freezeSec *= run.StatusDurationMult
+				}
+				target.ApplyFreeze(freezeSec)
 			}
 
 		case data.OnHitChain:
@@ -450,7 +464,7 @@ func (tm *TowerManager) ApplyOnHits(sourceTowerID int, effects []data.OnHitEffec
 					if falloff <= 0 {
 						falloff = 0.75
 					}
-					dmg := eff.Damage * dmgMult * falloff
+					dmg := eff.Damage * effectiveDmgMult * falloff
 					if other.TakeDamage(dmg, spawner) {
 						run.AddKill(other.Bounty, other.XP, other.Type == malware.TypeBoss)
 						tm.AddTowerXP(sourceTowerID, dmg+float64(other.XP)*5.0, run)

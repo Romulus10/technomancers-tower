@@ -122,18 +122,7 @@ func SlotDataDefault(slotID int) *save.SlotData {
 
 func (gs *GameState) StartNewRun() {
 	gs.Registry = data.NewRegistry()
-
-	gs.Run = economy.NewRunState(
-		gs.Meta.GetTalentLevel("kernel_shield"),
-		gs.Meta.GetTalentLevel("boot_bytes"),
-		gs.Meta.GetTalentLevel("mana_conductor"),
-		gs.Meta.GetTalentLevel("overclock_nodes"),
-		gs.Meta.GetTalentLevel("spell_efficiency"),
-		gs.Meta.GetTalentLevel("scrap_leech"),
-		gs.Meta.GetTalentLevel("tower_potency"),
-		gs.Meta.GetTalentLevel("sensor_array"),
-		gs.Meta.GetTalentLevel("nanite_resilience"),
-	)
+	gs.Run = economy.NewRunState(gs.Meta)
 
 	gs.Grid = motherboard.NewGrid()
 	gs.Malware = malware.NewSpawner(gs.Registry)
@@ -163,27 +152,39 @@ func (gs *GameState) ResumeRun(slotData *save.SlotData) {
 		}
 	}
 
-	gs.Run = &economy.RunState{
-		Bytes:             slotData.ActiveRun.Bytes,
-		TotalBytes:        slotData.ActiveRun.TotalBytes,
-		Mana:              slotData.ActiveRun.Mana,
-		MaxMana:           slotData.ActiveRun.MaxMana,
-		KernelHP:          slotData.ActiveRun.KernelHP,
-		MaxKernelHP:       slotData.ActiveRun.MaxKernelHP,
-		Level:             slotData.ActiveRun.Level,
-		CurrentXP:         slotData.ActiveRun.CurrentXP,
-		TargetXP:          slotData.ActiveRun.TargetXP,
-		PendingDrafts:     slotData.ActiveRun.PendingDrafts,
-		RunTime:           slotData.ActiveRun.RunTime,
-		Kills:             slotData.ActiveRun.Kills,
-		BossKills:         slotData.ActiveRun.BossKills,
-		TowerDamageMult:   slotData.ActiveRun.TowerDamageMult,
-		TowerRangeMult:    slotData.ActiveRun.TowerRangeMult,
-		TowerSpeedMult:    slotData.ActiveRun.TowerSpeedMult,
-		ManaGenMult:       slotData.ActiveRun.ManaGenMult,
-		ByteBountyMult:    slotData.ActiveRun.ByteBountyMult,
-		SpellCooldownMult: math.Max(0.5, 1.0-float64(gs.Meta.GetTalentLevel("spell_efficiency"))*0.08),
-		SpellCostMult:     math.Max(0.5, 1.0-float64(gs.Meta.GetTalentLevel("spell_efficiency"))*0.10),
+	gs.Run = economy.NewRunState(gs.Meta)
+	gs.Run.Bytes = slotData.ActiveRun.Bytes
+	gs.Run.TotalBytes = slotData.ActiveRun.TotalBytes
+	gs.Run.Mana = slotData.ActiveRun.Mana
+	if slotData.ActiveRun.MaxMana > 0 {
+		gs.Run.MaxMana = slotData.ActiveRun.MaxMana
+	}
+	gs.Run.KernelHP = slotData.ActiveRun.KernelHP
+	if slotData.ActiveRun.MaxKernelHP > 0 {
+		gs.Run.MaxKernelHP = slotData.ActiveRun.MaxKernelHP
+	}
+	gs.Run.Level = slotData.ActiveRun.Level
+	gs.Run.CurrentXP = slotData.ActiveRun.CurrentXP
+	gs.Run.TargetXP = slotData.ActiveRun.TargetXP
+	gs.Run.PendingDrafts = slotData.ActiveRun.PendingDrafts
+	gs.Run.RunTime = slotData.ActiveRun.RunTime
+	gs.Run.Kills = slotData.ActiveRun.Kills
+	gs.Run.BossKills = slotData.ActiveRun.BossKills
+	if slotData.ActiveRun.TowerDamageMult > 0 {
+		gs.Run.TowerDamageMult = slotData.ActiveRun.TowerDamageMult
+	}
+	if slotData.ActiveRun.TowerRangeMult > 0 {
+		gs.Run.TowerRangeMult = slotData.ActiveRun.TowerRangeMult
+	}
+	if slotData.ActiveRun.TowerSpeedMult > 0 {
+		gs.Run.TowerSpeedMult = slotData.ActiveRun.TowerSpeedMult
+		gs.Run.BaseTowerSpeedMult = slotData.ActiveRun.TowerSpeedMult
+	}
+	if slotData.ActiveRun.ManaGenMult > 0 {
+		gs.Run.ManaGenMult = slotData.ActiveRun.ManaGenMult
+	}
+	if slotData.ActiveRun.ByteBountyMult > 0 {
+		gs.Run.ByteBountyMult = slotData.ActiveRun.ByteBountyMult
 	}
 
 	gs.Grid = motherboard.NewGrid()
@@ -195,7 +196,6 @@ func (gs *GameState) ResumeRun(slotData *save.SlotData) {
 	for _, ts := range slotData.ActiveRun.Towers {
 		if def := gs.Registry.GetTower(ts.TowerID); def != nil {
 			gs.Grid.SetTower(ts.GridX, ts.GridY)
-			wx, wy := gs.Grid.GridToScreenCenter(ts.GridX, ts.GridY)
 			lvl := ts.Level
 			if lvl < 1 {
 				lvl = 1
@@ -204,6 +204,7 @@ func (gs *GameState) ResumeRun(slotData *save.SlotData) {
 			if tier < 1 {
 				tier = 1
 			}
+			wx, wy := gs.Grid.GridToScreenCenter(ts.GridX, ts.GridY)
 			gs.Towers.Towers = append(gs.Towers.Towers, &nodes.Tower{
 				ID:       ts.GridX*100 + ts.GridY,
 				Def:      def,
@@ -432,10 +433,47 @@ func (gs *GameState) Update() error {
 			gs.StartNewRun()
 		}
 
-		cardH := 65
-		gap := 10
-		totalContentHeight := float64(len(gs.Meta.Talents)*(cardH+gap) + 20)
-		viewportHeight := 445.0
+		// Tab navigation via hotkeys
+		if inpututil.IsKeyJustPressed(ebiten.Key1) {
+			gs.UI.ActiveShopCategory = 0
+			gs.ShopTargetScrollY = 0
+			gs.ShopScrollY = 0
+		} else if inpututil.IsKeyJustPressed(ebiten.Key2) {
+			gs.UI.ActiveShopCategory = 1
+			gs.ShopTargetScrollY = 0
+			gs.ShopScrollY = 0
+		} else if inpututil.IsKeyJustPressed(ebiten.Key3) {
+			gs.UI.ActiveShopCategory = 2
+			gs.ShopTargetScrollY = 0
+			gs.ShopScrollY = 0
+		} else if inpututil.IsKeyJustPressed(ebiten.Key4) {
+			gs.UI.ActiveShopCategory = 3
+			gs.ShopTargetScrollY = 0
+			gs.ShopScrollY = 0
+		} else if inpututil.IsKeyJustPressed(ebiten.Key5) {
+			gs.UI.ActiveShopCategory = 4
+			gs.ShopTargetScrollY = 0
+			gs.ShopScrollY = 0
+		} else if inpututil.IsKeyJustPressed(ebiten.KeyQ) {
+			gs.UI.ActiveShopCategory = (gs.UI.ActiveShopCategory - 1 + len(meta.AllCategories)) % len(meta.AllCategories)
+			gs.ShopTargetScrollY = 0
+			gs.ShopScrollY = 0
+		} else if inpututil.IsKeyJustPressed(ebiten.KeyE) || inpututil.IsKeyJustPressed(ebiten.KeyTab) {
+			gs.UI.ActiveShopCategory = (gs.UI.ActiveShopCategory + 1) % len(meta.AllCategories)
+			gs.ShopTargetScrollY = 0
+			gs.ShopScrollY = 0
+		}
+
+		if gs.UI.ActiveShopCategory < 0 || gs.UI.ActiveShopCategory >= len(meta.AllCategories) {
+			gs.UI.ActiveShopCategory = 0
+		}
+		activeCat := meta.AllCategories[gs.UI.ActiveShopCategory]
+		currentTalents := gs.Meta.GetTalentsByCategory(activeCat)
+
+		cardH := 68.0
+		gap := 8.0
+		totalContentHeight := float64(len(currentTalents)*(int(cardH)+int(gap)) + 20)
+		viewportHeight := 410.0
 		maxScroll := math.Max(0, totalContentHeight-viewportHeight)
 
 		_, wy := ebiten.Wheel()
@@ -458,15 +496,39 @@ func (gs *GameState) Update() error {
 		gs.ShopScrollY += (gs.ShopTargetScrollY - gs.ShopScrollY) * 0.25
 
 		if justClicked {
+			// Start Run
 			if cx >= 280 && cx <= 520 && cy >= 545 && cy <= 587 {
 				gs.StartNewRun()
-			} else if cy >= 75 && cy <= 530 {
-				startY := 90.0
-				for i, t := range gs.Meta.Talents {
-					btnY := startY + float64(i*(cardH+gap)) + 12.0 - gs.ShopScrollY
-					if cx >= 585 && cx <= 730 && float64(cy) >= btnY && float64(cy) <= btnY+40.0 {
-						gs.Meta.BuyTalent(t.ID)
+			} else if cx >= 595 && cx <= 765 && cy >= 16 && cy <= 54 {
+				// Reset All Talents
+				gs.Meta.ResetAllTalents()
+			} else if cy >= 72 && cy <= 116 {
+				// Tab click
+				tabStartX := 35.0
+				tabW := 142.0
+				tabGap := 5.0
+				for cIdx := range meta.AllCategories {
+					tx := tabStartX + float64(cIdx)*(tabW+tabGap)
+					if float64(cx) >= tx && float64(cx) <= tx+tabW {
+						gs.UI.ActiveShopCategory = cIdx
+						gs.ShopTargetScrollY = 0
+						gs.ShopScrollY = 0
 						break
+					}
+				}
+			} else if cy >= 118 && cy <= 528 {
+				// Talent card clicks (Buy / Refund)
+				startY := 122.0
+				for i, t := range currentTalents {
+					btnY := startY + float64(i)*(cardH+gap) + 12.0 - gs.ShopScrollY
+					if float64(cy) >= btnY && float64(cy) <= btnY+44.0 {
+						if cx >= 535 && cx <= 645 {
+							gs.Meta.BuyTalent(t.ID)
+							break
+						} else if cx >= 655 && cx <= 745 {
+							gs.Meta.RefundTalent(t.ID)
+							break
+						}
 					}
 				}
 			}
@@ -703,6 +765,22 @@ func (gs *GameState) updatePlaying(cx, cy int, justClicked bool) {
 		}
 		if gs.Run.DamageKernel(e.CoreDamage) {
 			gameOver = true
+		} else if gs.Run.KernelEMPDamage > 0 {
+			coreX, coreY := gs.Grid.GridToScreenCenter(gs.Grid.CorePos.X, gs.Grid.CorePos.Y)
+			if gs.Particles != nil {
+				gs.Particles.EmitExplosion(coreX, coreY, 40, color.RGBA{R: 50, G: 200, B: 255, A: 255})
+			}
+			for _, other := range gs.Malware.Enemies {
+				if !other.IsDead {
+					dist := math.Hypot(other.X-coreX, other.Y-coreY)
+					if dist <= 180 {
+						if other.TakeDamage(gs.Run.KernelEMPDamage, gs.Malware) {
+							gs.Run.AddKill(other.Bounty, other.XP, other.Type == malware.TypeBoss)
+						}
+						other.ApplySlow(0.50, 3.0)
+					}
+				}
+			}
 		}
 	})
 
@@ -877,7 +955,7 @@ func (gs *GameState) Draw(screen *ebiten.Image) {
 		gs.UI.DrawToolbar(screen, gs.Towers, gs.Spells, gs.KeyMgr, gs.LoadoutTowers, gs.LoadoutSpells, gs.Run, cx, cy)
 
 		if gs.Mode == ModeDraft {
-			gs.Draft.Draw(screen)
+			gs.Draft.Draw(screen, gs.Run)
 		} else if gs.Mode == ModePause {
 			gs.UI.DrawPauseMenu(screen)
 		}

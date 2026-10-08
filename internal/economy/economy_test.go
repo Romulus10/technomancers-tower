@@ -7,8 +7,24 @@ import (
 )
 
 func TestNewRunStateWithMetaModifiers(t *testing.T) {
-	// metaShieldLvl=2, metaBootLvl=3, metaManaLvl=1, metaSpeedLvl=2, metaSpellLvl=1, metaScrapLvl=2, metaDamageLvl=3, metaRangeLvl=1, metaNaniteLvl=0
-	run := economy.NewRunState(2, 3, 1, 2, 1, 2, 3, 1, 0)
+	talents := economy.MapTalents{
+		"kernel_shield":        2, // +50 HP -> 150
+		"boot_bytes":           3, // +120 Bytes -> 240
+		"mana_conductor":       1, // +20% Mana gen -> 1.20
+		"overclock_nodes":      2, // +10% Speed -> 1.10
+		"spell_efficiency":     1, // -8% CD, -10% cost
+		"scrap_leech":          2, // +20% Byte bounty -> 1.20
+		"tower_potency":        3, // +18% Dmg -> 1.18
+		"sensor_array":         1, // +6% Range -> 1.06
+		"hardened_firewall":    2, // -2 dmg reduction
+		"natural_mana_regen":   2, // +1.0 mana/sec
+		"expanded_mana_pool":   2, // +50 max mana -> 150
+		"shards_harvest":       2, // +30% shards
+		"starting_level":       1, // start at lvl 2 + 1 bonus draft
+		"draft_rerolls":        2, // 2 rerolls
+		"extra_draft_slot":     1, // 4 draft choices
+	}
+	run := economy.NewRunState(talents)
 
 	// MaxHP: 100 + 2*25 = 150
 	if run.MaxKernelHP != 150.0 || run.KernelHP != 150.0 {
@@ -20,6 +36,11 @@ func TestNewRunStateWithMetaModifiers(t *testing.T) {
 		t.Errorf("expected Bytes 240, got %.1f", run.Bytes)
 	}
 
+	// Max Mana: 100 + 2*25 = 150
+	if run.MaxMana != 150.0 {
+		t.Errorf("expected MaxMana 150, got %.1f", run.MaxMana)
+	}
+
 	// Modifiers
 	if run.ManaGenMult != 1.20 {
 		t.Errorf("expected ManaGenMult 1.20, got %.2f", run.ManaGenMult)
@@ -27,10 +48,19 @@ func TestNewRunStateWithMetaModifiers(t *testing.T) {
 	if run.TowerDamageMult != 1.18 {
 		t.Errorf("expected TowerDamageMult 1.18, got %.2f", run.TowerDamageMult)
 	}
+	if run.Level != 2 || run.PendingDrafts != 1 {
+		t.Errorf("expected level 2 with 1 pending draft from starting_level, got lvl=%d, drafts=%d", run.Level, run.PendingDrafts)
+	}
+	if run.DraftCardChoices != 4 {
+		t.Errorf("expected 4 draft card choices, got %d", run.DraftCardChoices)
+	}
+	if run.DraftRerolls != 2 {
+		t.Errorf("expected 2 draft rerolls, got %d", run.DraftRerolls)
+	}
 }
 
 func TestRunStateTransactionsAndEconomy(t *testing.T) {
-	run := economy.NewRunState(0, 0, 0, 0, 0, 0, 0, 0, 0)
+	run := economy.NewRunState(nil)
 
 	// Bytes transactions
 	if !run.CanAffordBytes(50) {
@@ -59,7 +89,7 @@ func TestRunStateTransactionsAndEconomy(t *testing.T) {
 		t.Errorf("expected 25.0 mana after 1s generation, got %.1f", run.Mana)
 	}
 
-	// Kernel damage and game over trigger
+	// Kernel damage with no armor
 	gameOver := run.DamageKernel(40)
 	if gameOver || run.KernelHP != 60 {
 		t.Errorf("expected 60 HP remaining without game over, got %.1f", run.KernelHP)
@@ -70,21 +100,44 @@ func TestRunStateTransactionsAndEconomy(t *testing.T) {
 	}
 }
 
+func TestArmorAndNaniteRegen(t *testing.T) {
+	talents := economy.MapTalents{
+		"hardened_firewall": 5, // -5 damage reduction
+		"nanite_regen":      2, // +2 HP every 15s
+	}
+	run := economy.NewRunState(talents)
+
+	// 10 damage reduced by 5 -> 5 damage taken (100 -> 95)
+	run.DamageKernel(10)
+	if run.KernelHP != 95.0 {
+		t.Errorf("expected 95 HP after 10 - 5 armor damage, got %.1f", run.KernelHP)
+	}
+
+	// 15 seconds elapsed -> Nanite regen triggers +2 HP (95 -> 97)
+	run.Update(15.0)
+	if run.KernelHP != 97.0 {
+		t.Errorf("expected 97 HP after nanite regen, got %.1f", run.KernelHP)
+	}
+}
+
 func TestGlitchShardCalculation(t *testing.T) {
-	run := economy.NewRunState(0, 0, 0, 0, 0, 0, 0, 0, 0)
+	talents := economy.MapTalents{
+		"shards_harvest": 2, // +30% shards
+	}
+	run := economy.NewRunState(talents)
 	run.RunTime = 120.0 // 2 minutes (120/10 = 12 shards)
 	run.Kills = 100     // 100 kills (100/20 = 5 shards)
 	run.BossKills = 2   // 2 bosses (2*15 = 30 shards)
 
 	shards := run.CalculateFinalShards()
-	expected := 12 + 5 + 30
-	if shards != expected {
-		t.Errorf("expected %d shards, got %d", expected, shards)
+	// Base = 12 + 5 + 30 = 47. 47 * 1.30 = 61.1 -> 61
+	if shards != 61 {
+		t.Errorf("expected 61 shards with +30%% harvest talent, got %d", shards)
 	}
 }
 
 func TestRunStateLevelUpAndPendingDrafts(t *testing.T) {
-	run := economy.NewRunState(0, 0, 0, 0, 0, 0, 0, 0, 0)
+	run := economy.NewRunState(nil)
 	if run.Level != 1 || run.PendingDrafts != 0 || run.TargetXP != 40.0 {
 		t.Fatalf("unexpected initial run state: level=%d, drafts=%d, targetXP=%.1f", run.Level, run.PendingDrafts, run.TargetXP)
 	}

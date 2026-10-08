@@ -1,6 +1,7 @@
 package draft
 
 import (
+	"fmt"
 	"image/color"
 	"math"
 	"math/rand"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
@@ -79,15 +81,29 @@ func (dm *DraftManager) GenerateDraft(run *economy.RunState) {
 		}
 	}
 
-	if len(pool) < 3 {
+	choicesCount := 3
+	if run != nil && run.DraftCardChoices > 0 {
+		choicesCount = run.DraftCardChoices
+	}
+
+	if len(pool) <= choicesCount {
 		dm.OfferedCards = pool
 	} else {
 		rand.Shuffle(len(pool), func(i, j int) { pool[i], pool[j] = pool[j], pool[i] })
-		dm.OfferedCards = pool[:3]
+		dm.OfferedCards = pool[:choicesCount]
 	}
 
 	dm.Active = true
 	dm.HoverIndex = -1
+}
+
+func (dm *DraftManager) Reroll(run *economy.RunState) bool {
+	if run == nil || run.DraftRerolls <= 0 {
+		return false
+	}
+	run.DraftRerolls--
+	dm.GenerateDraft(run)
+	return true
 }
 
 func (dm *DraftManager) ApplyCard(card *data.CardDef, run *economy.RunState) {
@@ -118,18 +134,50 @@ func (dm *DraftManager) ApplyCard(card *data.CardDef, run *economy.RunState) {
 	}
 }
 
+func (dm *DraftManager) getCardLayout() (cardW, cardH, gap, startX, startY float32) {
+	numCards := len(dm.OfferedCards)
+	startY = float32(145)
+	if numCards <= 3 {
+		cardW = 210
+		cardH = 310
+		gap = 25
+	} else if numCards == 4 {
+		cardW = 175
+		cardH = 310
+		gap = 18
+	} else {
+		cardW = 142
+		cardH = 310
+		gap = 12
+	}
+	totalW := float32(numCards)*cardW + float32(math.Max(0, float64(numCards-1)))*gap
+	startX = (float32(800) - totalW) / 2
+	return
+}
+
 func (dm *DraftManager) Update(cursorX, cursorY int, justClicked bool, run *economy.RunState) bool {
 	if !dm.Active {
 		return false
 	}
 
+	if inpututil.IsKeyJustPressed(ebiten.KeyR) && run != nil && run.DraftRerolls > 0 {
+		dm.Reroll(run)
+		return false
+	}
+
+	// Check Reroll button click
+	if run != nil && run.DraftRerolls > 0 {
+		btnX, btnY, btnW, btnH := float32(310), float32(480), float32(180), float32(34)
+		if float32(cursorX) >= btnX && float32(cursorX) <= btnX+btnW && float32(cursorY) >= btnY && float32(cursorY) <= btnY+btnH {
+			if justClicked {
+				dm.Reroll(run)
+				return false
+			}
+		}
+	}
+
 	dm.HoverIndex = -1
-	cardW := float32(210)
-	cardH := float32(310)
-	startY := float32(145)
-	gap := float32(30)
-	totalW := float32(len(dm.OfferedCards))*cardW + float32(len(dm.OfferedCards)-1)*gap
-	startX := (float32(800) - totalW) / 2
+	cardW, cardH, gap, startX, startY := dm.getCardLayout()
 
 	for i, card := range dm.OfferedCards {
 		cx := startX + float32(i)*(cardW+gap)
@@ -148,7 +196,7 @@ func (dm *DraftManager) Update(cursorX, cursorY int, justClicked bool, run *econ
 	return false
 }
 
-func (dm *DraftManager) Draw(screen *ebiten.Image) {
+func (dm *DraftManager) Draw(screen *ebiten.Image, run *economy.RunState) {
 	if !dm.Active {
 		return
 	}
@@ -157,15 +205,15 @@ func (dm *DraftManager) Draw(screen *ebiten.Image) {
 	vector.FillRect(screen, 0, 0, 800, 600, color.RGBA{R: 5, G: 8, B: 15, A: 235}, false)
 
 	// Header Banner Box
-	gfx.DrawHolographicPanel(screen, 180, 85, 440, 42, gfx.ColorCyanNeon, gfx.ColorPanelDark)
-	ebitenutil.DebugPrintAt(screen, "=== RUNTIME LEVEL UP: SELECT AN UPGRADE ===", 245, 98)
+	gfx.DrawHolographicPanel(screen, 180, 75, 440, 42, gfx.ColorCyanNeon, gfx.ColorPanelDark)
+	ebitenutil.DebugPrintAt(screen, "=== RUNTIME LEVEL UP: SELECT AN UPGRADE ===", 245, 88)
 
-	cardW := float32(210)
-	cardH := float32(310)
-	startY := float32(145)
-	gap := float32(30)
-	totalW := float32(len(dm.OfferedCards))*cardW + float32(len(dm.OfferedCards)-1)*gap
-	startX := (float32(800) - totalW) / 2
+	cardW, cardH, gap, startX, startY := dm.getCardLayout()
+	numCards := len(dm.OfferedCards)
+	maxCharLen := 25
+	if numCards >= 4 {
+		maxCharLen = 20
+	}
 
 	for i, card := range dm.OfferedCards {
 		cx := startX + float32(i)*(cardW+gap)
@@ -188,7 +236,7 @@ func (dm *DraftManager) Draw(screen *ebiten.Image) {
 
 		// Top Banner
 		vector.FillRect(screen, cx+2, cy+2, cardW-4, 30, color.RGBA{R: card.Color.R / 3, G: card.Color.G / 3, B: card.Color.B / 3, A: 255}, false)
-		ebitenutil.DebugPrintAt(screen, card.Title, int(cx)+15, int(cy)+10)
+		ebitenutil.DebugPrintAt(screen, card.Title, int(cx)+10, int(cy)+10)
 
 		// Procedural Icon Badge if card has TargetID
 		if len(card.Effects) > 0 && card.Effects[0].TargetID != "" {
@@ -197,31 +245,44 @@ func (dm *DraftManager) Draw(screen *ebiten.Image) {
 			icon := gfx.GetCache().GetIconBadge(targetID, isTower, card.Color)
 			if icon != nil {
 				op := &ebiten.DrawImageOptions{}
-				op.GeoM.Translate(float64(cx+cardW-36), float64(cy+3))
+				op.GeoM.Translate(float64(cx+cardW-34), float64(cy+3))
 				screen.DrawImage(icon, op)
 			}
 		}
 
 		// Card Subtitle
-		subtitleLines := WrapText(card.Subtitle, 24)
+		subtitleLines := WrapText(card.Subtitle, maxCharLen)
 		subY := int(cy) + 48
 		for sIdx, sLine := range subtitleLines {
-			ebitenutil.DebugPrintAt(screen, sLine, int(cx)+15, subY+sIdx*15)
+			ebitenutil.DebugPrintAt(screen, sLine, int(cx)+10, subY+sIdx*15)
 		}
 
 		// Card Description (word-wrapped)
-		descLines := WrapText(card.Description, 25)
+		descLines := WrapText(card.Description, maxCharLen)
 		descY := int(cy) + 95
 		for dIdx, dLine := range descLines {
-			ebitenutil.DebugPrintAt(screen, dLine, int(cx)+15, descY+dIdx*16)
+			ebitenutil.DebugPrintAt(screen, dLine, int(cx)+10, descY+dIdx*16)
 		}
 
 		// Click prompt
 		if isHovered {
 			promptBg := color.RGBA{R: 20, G: 70, B: 110, A: 240}
-			vector.FillRect(screen, cx+15, cy+260, cardW-30, 32, promptBg, false)
-			vector.StrokeRect(screen, cx+15, cy+260, cardW-30, 32, 1.5, gfx.ColorCyanNeon, false)
-			ebitenutil.DebugPrintAt(screen, "[ INSTALL UPGRADE ]", int(cx)+32, int(cy)+270)
+			btnY := cy + cardH - 45
+			vector.FillRect(screen, cx+10, btnY, cardW-20, 32, promptBg, false)
+			vector.StrokeRect(screen, cx+10, btnY, cardW-20, 32, 1.5, gfx.ColorCyanNeon, false)
+			label := "[ INSTALL ]"
+			if numCards <= 3 {
+				label = "[ INSTALL UPGRADE ]"
+			}
+			ebitenutil.DebugPrintAt(screen, label, int(cx)+int(cardW/2)-len(label)*3-10, int(btnY)+10)
 		}
+	}
+
+	// Draw Reroll Button if charges available
+	if run != nil && run.DraftRerolls > 0 {
+		btnX, btnY, btnW, btnH := float32(310), float32(480), float32(180), float32(34)
+		gfx.DrawHolographicPanel(screen, btnX, btnY, btnW, btnH, gfx.ColorGoldMatrix, gfx.ColorPanelDark)
+		rerollText := fmt.Sprintf("[R] REROLL (%d Left)", run.DraftRerolls)
+		ebitenutil.DebugPrintAt(screen, rerollText, int(btnX)+20, int(btnY)+10)
 	}
 }

@@ -14,7 +14,7 @@ func TestSpellCastingAndCooldowns(t *testing.T) {
 	reg := data.NewRegistry()
 	sm := spells.NewSpellManager(reg)
 	spawner := malware.NewSpawner(reg)
-	run := economy.NewRunState(0, 0, 0, 0, 0, 0, 0, 0, 0)
+	run := economy.NewRunState(nil)
 	run.Mana = 100
 
 	// Chain lightning is unlocked by default

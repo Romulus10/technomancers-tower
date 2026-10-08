@@ -3,6 +3,7 @@ package spells
 import (
 	"image/color"
 	"math"
+	"math/rand"
 
 	"technomancers-tower/internal/data"
 	"technomancers-tower/internal/economy"
@@ -86,11 +87,13 @@ func (sm *SpellManager) Update(dt float64, run *economy.RunState) {
 	}
 
 	// Overclock effect
-	if sm.OverclockTimer > 0 {
-		sm.OverclockTimer -= dt
-		run.TowerSpeedMult = 1.70
-	} else {
-		run.TowerSpeedMult = 1.0
+	if run != nil {
+		if sm.OverclockTimer > 0 {
+			sm.OverclockTimer -= dt
+			run.TowerSpeedMult = run.BaseTowerSpeedMult * 1.70
+		} else {
+			run.TowerSpeedMult = run.BaseTowerSpeedMult
+		}
 	}
 
 	// Update VFX
@@ -123,11 +126,20 @@ func (sm *SpellManager) CastSpell(id string, targetX, targetY float64, enemies [
 	sm.Cooldowns[id] = def.Cooldown * run.SpellCooldownMult
 
 	// Data-driven execution of all modular payload effects
+	spellDmgMult := 1.0
+	if run != nil && run.SpellCritChance > 0 && rand.Float64() < run.SpellCritChance {
+		spellDmgMult = run.SpellCritMult
+	}
+	spellRadiusMult := 1.0
+	if run != nil && run.SpellRadiusMult > 0 {
+		spellRadiusMult = run.SpellRadiusMult
+	}
+
 	for _, eff := range def.Effects {
 		switch eff.Type {
 		case data.SpellEffectChainLightning:
 			var firstHit *malware.Enemy
-			minDist := eff.Radius
+			minDist := eff.Radius * spellRadiusMult
 			for _, e := range enemies {
 				if e.IsDead || e.IsPhased {
 					continue
@@ -140,7 +152,7 @@ func (sm *SpellManager) CastSpell(id string, targetX, targetY float64, enemies [
 			}
 
 			if firstHit != nil {
-				if firstHit.TakeDamage(eff.Damage, spawner) {
+				if firstHit.TakeDamage(eff.Damage*spellDmgMult, spawner) {
 					run.AddKill(firstHit.Bounty, firstHit.XP, firstHit.Type == malware.TypeBoss)
 				}
 				sm.ActiveEffects = append(sm.ActiveEffects, &SpellEffectVFX{
@@ -155,8 +167,8 @@ func (sm *SpellManager) CastSpell(id string, targetX, targetY float64, enemies [
 						continue
 					}
 					dist := math.Hypot(other.X-curr.X, other.Y-curr.Y)
-					if dist <= eff.ChainRange {
-						if other.TakeDamage(eff.ChainDamage, spawner) {
+					if dist <= eff.ChainRange*spellRadiusMult {
+						if other.TakeDamage(eff.ChainDamage*spellDmgMult, spawner) {
 							run.AddKill(other.Bounty, other.XP, other.Type == malware.TypeBoss)
 						}
 						sm.ActiveEffects = append(sm.ActiveEffects, &SpellEffectVFX{
@@ -173,43 +185,45 @@ func (sm *SpellManager) CastSpell(id string, targetX, targetY float64, enemies [
 			}
 
 		case data.SpellEffectAreaFreeze:
+			effectiveRadius := eff.Radius * spellRadiusMult
 			for _, e := range enemies {
 				if e.IsDead {
 					continue
 				}
 				dist := math.Hypot(e.X-targetX, e.Y-targetY)
-				if dist <= eff.Radius {
+				if dist <= effectiveRadius {
 					e.ApplyFreeze(eff.FreezeSeconds)
 					if eff.Damage > 0 {
-						if e.TakeDamage(eff.Damage, spawner) {
+						if e.TakeDamage(eff.Damage*spellDmgMult, spawner) {
 							run.AddKill(e.Bounty, e.XP, e.Type == malware.TypeBoss)
 						}
 					}
 				}
 			}
 			sm.ActiveEffects = append(sm.ActiveEffects, &SpellEffectVFX{
-				X: targetX, Y: targetY, Radius: eff.Radius,
+				X: targetX, Y: targetY, Radius: effectiveRadius,
 				Life: 0.6, MaxLife: 0.6, Color: def.Color,
 			})
 
 		case data.SpellEffectAreaDamage:
+			effectiveRadius := eff.Radius * spellRadiusMult
 			for _, e := range enemies {
 				if e.IsDead {
 					continue
 				}
 				dist := math.Hypot(e.X-targetX, e.Y-targetY)
-				if dist <= eff.Radius {
-					falloff := 1.0 - (dist / (eff.Radius * 1.25))
+				if dist <= effectiveRadius {
+					falloff := 1.0 - (dist / (effectiveRadius * 1.25))
 					if falloff < 0.4 {
 						falloff = 0.4
 					}
-					if e.TakeDamage(eff.Damage*falloff, spawner) {
+					if e.TakeDamage(eff.Damage*spellDmgMult*falloff, spawner) {
 						run.AddKill(e.Bounty, e.XP, e.Type == malware.TypeBoss)
 					}
 				}
 			}
 			sm.ActiveEffects = append(sm.ActiveEffects, &SpellEffectVFX{
-				X: targetX, Y: targetY, Radius: eff.Radius,
+				X: targetX, Y: targetY, Radius: effectiveRadius,
 				Life: 0.5, MaxLife: 0.5, Color: def.Color,
 			})
 
