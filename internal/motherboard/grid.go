@@ -267,7 +267,7 @@ func (g *Grid) Draw(screen *ebiten.Image) {
 	coreSprite := gfx.GetCache().GetCPUCore()
 	csx := float64(OffsetX + g.CorePos.X*CellSize - 7)
 	csy := float64(OffsetY + g.CorePos.Y*CellSize - 7)
-	
+
 	// Pulsing underglow
 	pulseR := float32(22.0 + (traceAnim+1.0)*3.0)
 	vector.StrokeCircle(screen, float32(OffsetX+g.CorePos.X*CellSize+CellSize/2), float32(OffsetY+g.CorePos.Y*CellSize+CellSize/2), pulseR, 1.5, color.RGBA{R: 0, G: 220, B: 255, A: 120}, false)
