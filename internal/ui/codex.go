@@ -8,6 +8,7 @@ import (
 	"technomancers-tower/internal/config"
 	"technomancers-tower/internal/data"
 	"technomancers-tower/internal/economy"
+	"technomancers-tower/internal/gfx"
 	"technomancers-tower/internal/input"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -61,7 +62,7 @@ func (u *UI) DrawCodex(screen *ebiten.Image, reg *data.Registry, km *input.Keybi
 	boxW := float32(740)
 	boxH := float32(550)
 
-	vector.FillRect(screen, boxX, boxY, boxW, boxH, color.RGBA{R: 14, G: 18, B: 28, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, boxX, boxY, boxW, boxH, gfx.ColorCyanNeon, gfx.ColorPanelDark)
 
 	// 1. Render Tab Content First (so header masks it on top)
 	switch activeTab {
@@ -77,8 +78,8 @@ func (u *UI) DrawCodex(screen *ebiten.Image, reg *data.Registry, km *input.Keybi
 		u.drawSettingsTab(screen, settings, boxX, boxY, boxW, boxH, cx, cy)
 	}
 
-	// 2. Top Header Masking Panel (prevents scrolled cards from overlapping tabs)
-	vector.FillRect(screen, boxX+2, boxY+2, boxW-4, 62, color.RGBA{R: 14, G: 18, B: 28, A: 255}, false)
+	// 2. Top Header Masking Panel
+	vector.FillRect(screen, boxX+2, boxY+2, boxW-4, 62, gfx.ColorPanelDark, false)
 
 	// Top Navigation Tabs (5 Tabs)
 	tabW := float32(116)
@@ -94,27 +95,25 @@ func (u *UI) DrawCodex(screen *ebiten.Image, reg *data.Registry, km *input.Keybi
 		border := color.RGBA{R: 60, G: 80, B: 110, A: 255}
 		if isSelected {
 			bg = color.RGBA{R: 20, G: 70, B: 115, A: 255}
-			border = color.RGBA{R: 0, G: 220, B: 255, A: 255}
+			border = gfx.ColorCyanNeon
 		}
 
-		vector.FillRect(screen, tx, ty, tabW, tabH, bg, false)
-		vector.StrokeRect(screen, tx, ty, tabW, tabH, 1.5, border, false)
+		gfx.DrawHolographicPanel(screen, tx, ty, tabW, tabH, border, bg)
 		ebitenutil.DebugPrintAt(screen, tTitle, int(tx)+8, int(ty)+12)
 	}
 
 	// Close Button on top right
 	closeX := boxX + boxW - 95
 	closeY := boxY + 15
-	vector.FillRect(screen, closeX, closeY, 80, tabH, color.RGBA{R: 35, G: 22, B: 30, A: 255}, false)
-	vector.StrokeRect(screen, closeX, closeY, 80, tabH, 1.5, color.RGBA{R: 255, G: 80, B: 100, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, closeX, closeY, 80, tabH, gfx.ColorCrimsonGlitch, color.RGBA{R: 35, G: 22, B: 30, A: 255})
 	ebitenutil.DebugPrintAt(screen, "[ CLOSE ]", int(closeX)+10, int(closeY)+12)
 
 	// Divider
 	vector.StrokeLine(screen, boxX+15, boxY+62, boxX+boxW-15, boxY+62, 1.5, color.RGBA{R: 40, G: 55, B: 80, A: 255}, false)
 
 	// 3. Bottom Masking Bar & Container Border
-	vector.FillRect(screen, boxX+2, boxY+boxH-8, boxW-4, 8, color.RGBA{R: 14, G: 18, B: 28, A: 255}, false)
-	vector.StrokeRect(screen, boxX, boxY, boxW, boxH, 2, color.RGBA{R: 0, G: 200, B: 240, A: 255}, false)
+	vector.FillRect(screen, boxX+2, boxY+boxH-8, boxW-4, 8, gfx.ColorPanelDark, false)
+	vector.StrokeRect(screen, boxX, boxY, boxW, boxH, 2, gfx.ColorPanelBorder, false)
 
 	// 4. Scrollbar Track & Indicator Thumb
 	maxScroll := GetCodexMaxScroll(activeTab, reg)
@@ -130,7 +129,7 @@ func (u *UI) DrawCodex(screen *ebiten.Image, reg *data.Registry, km *input.Keybi
 			scrollRatio = 1
 		}
 		thumbY := trackY + scrollRatio*(trackH-thumbH)
-		vector.FillRect(screen, trackX, thumbY, 5, thumbH, color.RGBA{R: 0, G: 200, B: 240, A: 255}, false)
+		vector.FillRect(screen, trackX, thumbY, 5, thumbH, gfx.ColorCyanNeon, false)
 	}
 
 	// Active Rebinding Overlay Prompt
@@ -144,6 +143,7 @@ func (u *UI) drawTowersCodex(screen *ebiten.Image, reg *data.Registry, km *input
 	cardH := float32(72)
 	gap := float32(10)
 	startY := boxY + 75 - float32(scrollY)
+	cache := gfx.GetCache()
 
 	for i, def := range reg.Towers {
 		cardY := startY + float32(i)*(cardH+gap)
@@ -158,12 +158,15 @@ func (u *UI) drawTowersCodex(screen *ebiten.Image, reg *data.Registry, km *input
 			border = color.RGBA{R: 60, G: 70, B: 85, A: 180}
 		}
 
-		vector.FillRect(screen, boxX+20, cardY, cardW, cardH, bg, false)
-		vector.StrokeRect(screen, boxX+20, cardY, cardW, cardH, 1.5, border, false)
+		gfx.DrawHolographicPanel(screen, boxX+20, cardY, cardW, cardH, border, bg)
 
-		// Icon / Color Indicator
-		vector.FillRect(screen, boxX+30, cardY+12, 48, 48, def.Color, false)
-		vector.StrokeRect(screen, boxX+30, cardY+12, 48, 48, 1.5, color.RGBA{R: 255, G: 255, B: 255, A: 200}, false)
+		// Procedural Tower Sprite (Tier 1)
+		sprite := cache.GetTowerSprite(def.ID, 1, def.Color)
+		if sprite != nil {
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Translate(float64(boxX+38), float64(cardY+20))
+			screen.DrawImage(sprite, op)
+		}
 
 		if def.Unlocked {
 			ebitenutil.DebugPrintAt(screen, def.Name, int(boxX)+90, int(cardY)+10)
@@ -190,12 +193,10 @@ func (u *UI) drawTowersCodex(screen *ebiten.Image, reg *data.Registry, km *input
 				sBorder := color.RGBA{R: 70, G: 90, B: 120, A: 255}
 				if isAssigned {
 					sBg = color.RGBA{R: 0, G: 160, B: 220, A: 255}
-					sBorder = color.RGBA{R: 160, G: 240, B: 255, A: 255}
+					sBorder = gfx.ColorCyanNeon
 				}
 
-				vector.FillRect(screen, sbX, sbY, sbW, sbH, sBg, false)
-				vector.StrokeRect(screen, sbX, sbY, sbW, sbH, 1.2, sBorder, false)
-
+				gfx.DrawHolographicPanel(screen, sbX, sbY, sbW, sbH, sBorder, sBg)
 				keyLabel := km.KeyName(km.TowerKeys[s])
 				ebitenutil.DebugPrintAt(screen, keyLabel, int(sbX)+12, int(sbY)+8)
 			}
@@ -211,6 +212,7 @@ func (u *UI) drawSpellsCodex(screen *ebiten.Image, reg *data.Registry, km *input
 	cardH := float32(72)
 	gap := float32(10)
 	startY := boxY + 75 - float32(scrollY)
+	cache := gfx.GetCache()
 
 	for i, def := range reg.Spells {
 		cardY := startY + float32(i)*(cardH+gap)
@@ -225,11 +227,15 @@ func (u *UI) drawSpellsCodex(screen *ebiten.Image, reg *data.Registry, km *input
 			border = color.RGBA{R: 60, G: 70, B: 85, A: 180}
 		}
 
-		vector.FillRect(screen, boxX+20, cardY, cardW, cardH, bg, false)
-		vector.StrokeRect(screen, boxX+20, cardY, cardW, cardH, 1.5, border, false)
+		gfx.DrawHolographicPanel(screen, boxX+20, cardY, cardW, cardH, border, bg)
 
-		vector.FillCircle(screen, boxX+54, cardY+36, 22, def.Color, false)
-		vector.StrokeCircle(screen, boxX+54, cardY+36, 22, 1.5, color.RGBA{R: 255, G: 255, B: 255, A: 200}, false)
+		// Procedural Icon Badge
+		icon := cache.GetIconBadge(def.ID, false, def.Color)
+		if icon != nil {
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Translate(float64(boxX+40), float64(cardY+22))
+			screen.DrawImage(icon, op)
+		}
 
 		if def.Unlocked {
 			ebitenutil.DebugPrintAt(screen, def.Name, int(boxX)+90, int(cardY)+10)
@@ -249,17 +255,15 @@ func (u *UI) drawSpellsCodex(screen *ebiten.Image, reg *data.Registry, km *input
 				sBorder := color.RGBA{R: 100, G: 70, B: 140, A: 255}
 				if isAssigned {
 					sBg = color.RGBA{R: 160, G: 70, B: 255, A: 255}
-					sBorder = color.RGBA{R: 220, G: 180, B: 255, A: 255}
+					sBorder = gfx.ColorPurpleArcane
 				}
 
-				vector.FillRect(screen, sbX, sbY, sbW, sbH, sBg, false)
-				vector.StrokeRect(screen, sbX, sbY, sbW, sbH, 1.2, sBorder, false)
-
+				gfx.DrawHolographicPanel(screen, sbX, sbY, sbW, sbH, sBorder, sBg)
 				keyLabel := km.KeyName(km.SpellKeys[s])
 				ebitenutil.DebugPrintAt(screen, keyLabel, int(sbX)+12, int(sbY)+8)
 			}
 		} else {
-			ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%s [LOCKED SPELL]", def.Name), int(boxX)+90, int(boxX)+15)
+			ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%s [LOCKED SPELL]", def.Name), int(boxX)+90, int(cardY)+15)
 			ebitenutil.DebugPrintAt(screen, "Unlock this Cyber-Spell via Runtime Level-Up Draft or Root Access Archive.", int(boxX)+90, int(cardY)+40)
 		}
 	}
@@ -270,6 +274,7 @@ func (u *UI) drawEnemiesCodex(screen *ebiten.Image, reg *data.Registry, boxX, bo
 	cardH := float32(76)
 	gap := float32(10)
 	startY := boxY + 75 - float32(scrollY)
+	cache := gfx.GetCache()
 
 	for i, def := range reg.Enemies {
 		cardY := startY + float32(i)*(cardH+gap)
@@ -283,13 +288,15 @@ func (u *UI) drawEnemiesCodex(screen *ebiten.Image, reg *data.Registry, boxX, bo
 			bg = color.RGBA{R: 35, G: 16, B: 24, A: 255}
 		}
 
-		vector.FillRect(screen, boxX+20, cardY, cardW, cardH, bg, false)
-		vector.StrokeRect(screen, boxX+20, cardY, cardW, cardH, 1.5, border, false)
+		gfx.DrawHolographicPanel(screen, boxX+20, cardY, cardW, cardH, border, bg)
 
-		// Icon / Unit Representation
-		vector.FillCircle(screen, boxX+54, cardY+38, def.Radius*1.2, def.Color, false)
-		if def.BaseShield > 0 {
-			vector.StrokeCircle(screen, boxX+54, cardY+38, def.Radius*1.2+3, 1.5, color.RGBA{R: 80, G: 190, B: 255, A: 240}, false)
+		// Procedural Enemy Sprite
+		sprite := cache.GetEnemySprite(def.ID, def.IsBoss, def.Color, def.Radius)
+		if sprite != nil {
+			sw, sh := sprite.Bounds().Dx(), sprite.Bounds().Dy()
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Translate(float64(boxX+54)-float64(sw)/2.0, float64(cardY+38)-float64(sh)/2.0)
+			screen.DrawImage(sprite, op)
 		}
 
 		// Text info
@@ -317,15 +324,13 @@ func (u *UI) drawKeybindsTab(screen *ebiten.Image, km *input.KeybindManager, box
 
 	for i := 0; i < input.MaxToolbarSlots; i++ {
 		rowY := col1Y + 30 + float32(i)*48
-		vector.FillRect(screen, col1X, rowY, 310, 40, color.RGBA{R: 20, G: 26, B: 38, A: 255}, false)
-		vector.StrokeRect(screen, col1X, rowY, 310, 40, 1.2, color.RGBA{R: 50, G: 70, B: 100, A: 255}, false)
+		gfx.DrawHolographicPanel(screen, col1X, rowY, 310, 40, color.RGBA{R: 50, G: 70, B: 100, A: 255}, gfx.ColorPanelDark)
 
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Tower Slot %d:", i+1), int(col1X)+15, int(rowY)+12)
 
 		btnX := col1X + 220
 		btnY := rowY + 6
-		vector.FillRect(screen, btnX, btnY, 75, 28, color.RGBA{R: 25, G: 60, B: 95, A: 255}, false)
-		vector.StrokeRect(screen, btnX, btnY, 75, 28, 1.2, color.RGBA{R: 0, G: 200, B: 255, A: 255}, false)
+		gfx.DrawHolographicPanel(screen, btnX, btnY, 75, 28, gfx.ColorCyanNeon, color.RGBA{R: 25, G: 60, B: 95, A: 255})
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("[ %s ]", km.KeyName(km.TowerKeys[i])), int(btnX)+15, int(btnY)+6)
 	}
 
@@ -336,23 +341,20 @@ func (u *UI) drawKeybindsTab(screen *ebiten.Image, km *input.KeybindManager, box
 
 	for i := 0; i < input.MaxToolbarSlots; i++ {
 		rowY := col2Y + 30 + float32(i)*48
-		vector.FillRect(screen, col2X, rowY, 310, 40, color.RGBA{R: 24, G: 20, B: 36, A: 255}, false)
-		vector.StrokeRect(screen, col2X, rowY, 310, 40, 1.2, color.RGBA{R: 80, G: 60, B: 110, A: 255}, false)
+		gfx.DrawHolographicPanel(screen, col2X, rowY, 310, 40, color.RGBA{R: 80, G: 60, B: 110, A: 255}, color.RGBA{R: 24, G: 20, B: 36, A: 255})
 
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Spell Slot %d:", i+1), int(col2X)+15, int(rowY)+12)
 
 		btnX := col2X + 220
 		btnY := rowY + 6
-		vector.FillRect(screen, btnX, btnY, 75, 28, color.RGBA{R: 60, G: 35, B: 95, A: 255}, false)
-		vector.StrokeRect(screen, btnX, btnY, 75, 28, 1.2, color.RGBA{R: 180, G: 120, B: 255, A: 255}, false)
+		gfx.DrawHolographicPanel(screen, btnX, btnY, 75, 28, gfx.ColorPurpleArcane, color.RGBA{R: 60, G: 35, B: 95, A: 255})
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("[ %s ]", km.KeyName(km.SpellKeys[i])), int(btnX)+15, int(btnY)+6)
 	}
 
 	// Reset Defaults Button
 	resetBtnX := boxX + 260
 	resetBtnY := boxY + 480
-	vector.FillRect(screen, resetBtnX, resetBtnY, 220, 40, color.RGBA{R: 45, G: 25, B: 35, A: 255}, false)
-	vector.StrokeRect(screen, resetBtnX, resetBtnY, 220, 40, 1.5, color.RGBA{R: 255, G: 90, B: 110, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, resetBtnX, resetBtnY, 220, 40, gfx.ColorCrimsonGlitch, color.RGBA{R: 45, G: 25, B: 35, A: 255})
 	ebitenutil.DebugPrintAt(screen, "[ RESET DEFAULT KEYS ]", int(resetBtnX)+30, int(resetBtnY)+14)
 }
 
@@ -375,11 +377,10 @@ func (u *UI) drawSettingsTab(screen *ebiten.Image, settings *config.SettingsMana
 		border := color.RGBA{R: 50, G: 70, B: 95, A: 255}
 		if isActive {
 			bg = color.RGBA{R: 20, G: 65, B: 105, A: 255}
-			border = color.RGBA{R: 0, G: 220, B: 255, A: 255}
+			border = gfx.ColorCyanNeon
 		}
 
-		vector.FillRect(screen, startX, ry, btnW, btnH, bg, false)
-		vector.StrokeRect(screen, startX, ry, btnW, btnH, 1.5, border, false)
+		gfx.DrawHolographicPanel(screen, startX, ry, btnW, btnH, border, bg)
 
 		status := "[ SELECT ]"
 		if isActive {
@@ -393,14 +394,13 @@ func (u *UI) drawSettingsTab(screen *ebiten.Image, settings *config.SettingsMana
 	// Fullscreen Toggle Row
 	fsY := startY + float32(len(config.AvailableResolutions))*(btnH+gap) + 10
 	fsBg := color.RGBA{R: 28, G: 22, B: 38, A: 255}
-	fsBorder := color.RGBA{R: 120, G: 70, B: 200, A: 255}
+	fsBorder := gfx.ColorPurpleArcane
 	if settings.IsFullscreen {
 		fsBg = color.RGBA{R: 55, G: 25, B: 90, A: 255}
-		fsBorder = color.RGBA{R: 200, G: 120, B: 255, A: 255}
+		fsBorder = gfx.Brighten(gfx.ColorPurpleArcane, 0.4)
 	}
 
-	vector.FillRect(screen, startX, fsY, btnW, btnH, fsBg, false)
-	vector.StrokeRect(screen, startX, fsY, btnW, btnH, 1.5, fsBorder, false)
+	gfx.DrawHolographicPanel(screen, startX, fsY, btnW, btnH, fsBorder, fsBg)
 
 	fsStatus := "[ OFF ] (Click to Enable)"
 	if settings.IsFullscreen {
@@ -418,8 +418,7 @@ func (u *UI) DrawRebindPrompt(screen *ebiten.Image, km *input.KeybindManager) {
 	pX := float32(180)
 	pY := float32(210)
 
-	vector.FillRect(screen, pX, pY, pW, pH, color.RGBA{R: 18, G: 25, B: 40, A: 255}, false)
-	vector.StrokeRect(screen, pX, pY, pW, pH, 2.5, color.RGBA{R: 0, G: 220, B: 255, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, pX, pY, pW, pH, gfx.ColorCyanNeon, gfx.ColorPanelDark)
 
 	ebitenutil.DebugPrintAt(screen, "=== REBIND HOTKEY ===", int(pX)+145, int(pY)+25)
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Binding: %s", km.RebindPrompt), int(pX)+40, int(pY)+65)

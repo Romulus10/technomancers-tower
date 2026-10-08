@@ -7,6 +7,7 @@ import (
 
 	"technomancers-tower/internal/data"
 	"technomancers-tower/internal/economy"
+	"technomancers-tower/internal/gfx"
 	"technomancers-tower/internal/input"
 	"technomancers-tower/internal/malware"
 	"technomancers-tower/internal/meta"
@@ -34,7 +35,7 @@ func NewUI() *UI {
 }
 
 func (u *UI) DrawTitleScreen(screen *ebiten.Image, animTime float64, version string, cx, cy int) {
-	screen.Fill(color.RGBA{R: 10, G: 14, B: 22, A: 255})
+	screen.Fill(color.RGBA{R: 8, G: 12, B: 20, A: 255})
 
 	// Animated circuit grid backdrop
 	for x := 0; x < 800; x += 40 {
@@ -43,13 +44,13 @@ func (u *UI) DrawTitleScreen(screen *ebiten.Image, animTime float64, version str
 		}
 	}
 
-	// Pulsing decorative rings
+	// Pulsing decorative holographic rings
 	pulse := float32((math.Sin(animTime*2.0) + 1.0) * 0.5)
 	vector.StrokeCircle(screen, 400, 150, 140+pulse*12, 1.5, color.RGBA{R: 0, G: 160, B: 220, A: 80}, false)
 	vector.StrokeCircle(screen, 400, 150, 160+pulse*18, 1.5, color.RGBA{R: 160, G: 70, B: 255, A: 60}, false)
 
-	// Outer framing box
-	vector.StrokeRect(screen, 20, 20, 760, 560, 2, color.RGBA{R: 0, G: 180, B: 220, A: 200}, false)
+	// Outer framing holographic box
+	gfx.DrawHolographicPanel(screen, 20, 20, 760, 560, gfx.ColorPanelBorder, color.RGBA{0, 0, 0, 0})
 
 	// Glowing Title Banner
 	titleBoxW := float32(560)
@@ -57,8 +58,7 @@ func (u *UI) DrawTitleScreen(screen *ebiten.Image, animTime float64, version str
 	titleBoxX := float32(120)
 	titleBoxY := float32(95)
 
-	vector.FillRect(screen, titleBoxX, titleBoxY, titleBoxW, titleBoxH, color.RGBA{R: 18, G: 26, B: 42, A: 240}, false)
-	vector.StrokeRect(screen, titleBoxX, titleBoxY, titleBoxW, titleBoxH, 2.5, color.RGBA{R: 0, G: 220, B: 255, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, titleBoxX, titleBoxY, titleBoxW, titleBoxH, gfx.ColorCyanNeon, gfx.ColorPanelDark)
 
 	ebitenutil.DebugPrintAt(screen, "==================================================", 185, 110)
 	ebitenutil.DebugPrintAt(screen, "        T E C H N O M A N C E R ' S   T O W E R   ", 185, 130)
@@ -74,13 +74,12 @@ func (u *UI) DrawTitleScreen(screen *ebiten.Image, animTime float64, version str
 	btn1Y := float32(255)
 	hover1 := float32(cx) >= btnX && float32(cx) <= btnX+btnW && float32(cy) >= btn1Y && float32(cy) <= btn1Y+btnH
 	bg1 := color.RGBA{R: 20, G: 65, B: 105, A: 255}
-	border1 := color.RGBA{R: 0, G: 220, B: 255, A: 255}
+	border1 := gfx.ColorCyanNeon
 	if hover1 {
 		bg1 = color.RGBA{R: 30, G: 95, B: 155, A: 255}
-		border1 = color.RGBA{R: 100, G: 245, B: 255, A: 255}
+		border1 = gfx.ColorPanelHighlight
 	}
-	vector.FillRect(screen, btnX, btn1Y, btnW, btnH, bg1, false)
-	vector.StrokeRect(screen, btnX, btn1Y, btnW, btnH, 2, border1, false)
+	gfx.DrawHolographicPanel(screen, btnX, btn1Y, btnW, btnH, border1, bg1)
 	ebitenutil.DebugPrintAt(screen, "[ START GAME / PROFILES ]", int(btnX)+45, int(btn1Y)+15)
 
 	// 2. [ HOW TO PLAY / CONTROLS ]
@@ -90,36 +89,33 @@ func (u *UI) DrawTitleScreen(screen *ebiten.Image, animTime float64, version str
 	border2 := color.RGBA{R: 80, G: 160, B: 240, A: 255}
 	if hover2 {
 		bg2 = color.RGBA{R: 40, G: 55, B: 85, A: 255}
-		border2 = color.RGBA{R: 120, G: 200, B: 255, A: 255}
+		border2 = gfx.ColorCyanNeon
 	}
-	vector.FillRect(screen, btnX, btn2Y, btnW, btnH, bg2, false)
-	vector.StrokeRect(screen, btnX, btn2Y, btnW, btnH, 1.5, border2, false)
+	gfx.DrawHolographicPanel(screen, btnX, btn2Y, btnW, btnH, border2, bg2)
 	ebitenutil.DebugPrintAt(screen, "[ HOW TO PLAY / CONTROLS ]", int(btnX)+45, int(btn2Y)+15)
 
 	// 3. [ SETTINGS & RESOLUTION ]
 	btn3Y := float32(365)
 	hover3 := float32(cx) >= btnX && float32(cx) <= btnX+btnW && float32(cy) >= btn3Y && float32(cy) <= btn3Y+btnH
 	bg3 := color.RGBA{R: 35, G: 30, B: 52, A: 255}
-	border3 := color.RGBA{R: 160, G: 110, B: 240, A: 255}
+	border3 := gfx.ColorPurpleArcane
 	if hover3 {
 		bg3 = color.RGBA{R: 50, G: 40, B: 75, A: 255}
-		border3 = color.RGBA{R: 200, G: 150, B: 255, A: 255}
+		border3 = gfx.Brighten(gfx.ColorPurpleArcane, 0.4)
 	}
-	vector.FillRect(screen, btnX, btn3Y, btnW, btnH, bg3, false)
-	vector.StrokeRect(screen, btnX, btn3Y, btnW, btnH, 1.5, border3, false)
+	gfx.DrawHolographicPanel(screen, btnX, btn3Y, btnW, btnH, border3, bg3)
 	ebitenutil.DebugPrintAt(screen, "[ SETTINGS & RESOLUTION ]", int(btnX)+45, int(btn3Y)+15)
 
 	// 4. [ EXIT MAINFRAME ]
 	btn4Y := float32(420)
 	hover4 := float32(cx) >= btnX && float32(cx) <= btnX+btnW && float32(cy) >= btn4Y && float32(cy) <= btn4Y+btnH
 	bg4 := color.RGBA{R: 40, G: 24, B: 32, A: 255}
-	border4 := color.RGBA{R: 240, G: 70, B: 90, A: 255}
+	border4 := gfx.ColorCrimsonGlitch
 	if hover4 {
 		bg4 = color.RGBA{R: 65, G: 32, B: 45, A: 255}
-		border4 = color.RGBA{R: 255, G: 120, B: 140, A: 255}
+		border4 = gfx.Brighten(gfx.ColorCrimsonGlitch, 0.3)
 	}
-	vector.FillRect(screen, btnX, btn4Y, btnW, btnH, bg4, false)
-	vector.StrokeRect(screen, btnX, btn4Y, btnW, btnH, 1.5, border4, false)
+	gfx.DrawHolographicPanel(screen, btnX, btn4Y, btnW, btnH, border4, bg4)
 	ebitenutil.DebugPrintAt(screen, "[ EXIT MAINFRAME ]", int(btnX)+75, int(btn4Y)+15)
 
 	// Dynamic Version footer
@@ -138,8 +134,7 @@ func (u *UI) DrawHowToPlay(screen *ebiten.Image) {
 	boxW := float32(640)
 	boxH := float32(500)
 
-	vector.FillRect(screen, boxX, boxY, boxW, boxH, color.RGBA{R: 16, G: 22, B: 34, A: 255}, false)
-	vector.StrokeRect(screen, boxX, boxY, boxW, boxH, 2, color.RGBA{R: 0, G: 200, B: 255, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, boxX, boxY, boxW, boxH, gfx.ColorCyanNeon, gfx.ColorPanelDark)
 
 	ebitenutil.DebugPrintAt(screen, "=== OPERATOR DIRECTIVE & SYSTEM CONTROLS ===", 240, 75)
 
@@ -175,36 +170,26 @@ func (u *UI) DrawHowToPlay(screen *ebiten.Image) {
 	closeBtnW := float32(240)
 	closeBtnH := float32(40)
 
-	vector.FillRect(screen, closeBtnX, closeBtnY, closeBtnW, closeBtnH, color.RGBA{R: 20, G: 70, B: 110, A: 255}, false)
-	vector.StrokeRect(screen, closeBtnX, closeBtnY, closeBtnW, closeBtnH, 1.5, color.RGBA{R: 0, G: 220, B: 255, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, closeBtnX, closeBtnY, closeBtnW, closeBtnH, gfx.ColorCyanNeon, color.RGBA{R: 20, G: 70, B: 110, A: 255})
 	ebitenutil.DebugPrintAt(screen, "[ CLOSE GUIDE ] (ESC / SPACE)", int(closeBtnX)+25, int(closeBtnY)+14)
 }
 
 func (u *UI) DrawHUD(screen *ebiten.Image, run *economy.RunState, spawnerActiveSurge bool, surgeTimeLeft float64, graceTimeLeft float64, waveNum int, phase malware.WavePhase, phaseTimeLeft float64, threatLevel int) {
 	// Top Header Bar
-	vector.FillRect(screen, 0, 0, 800, 58, color.RGBA{R: 16, G: 20, B: 30, A: 255}, false)
-	vector.StrokeLine(screen, 0, 58, 800, 58, 1.5, color.RGBA{R: 0, G: 160, B: 200, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, 0, 0, 800, 58, gfx.ColorPanelBorder, gfx.ColorPanelDark)
 
-	// 1. Kernel Integrity (Health)
-	vector.FillRect(screen, 16, 12, 130, 16, color.RGBA{R: 40, G: 20, B: 25, A: 255}, false)
+	// 1. Kernel Integrity (Health) Gradient Bar
 	hpRatio := float32(run.KernelHP / run.MaxKernelHP)
-	if hpRatio > 0 {
-		vector.FillRect(screen, 16, 12, 130*hpRatio, 16, color.RGBA{R: 240, G: 60, B: 80, A: 255}, false)
-	}
-	vector.StrokeRect(screen, 16, 12, 130, 16, 1.5, color.RGBA{R: 255, G: 120, B: 140, A: 255}, false)
+	gfx.DrawGradientBar(screen, 16, 12, 130, 16, hpRatio, gfx.ColorCrimsonGlitch, gfx.Brighten(gfx.ColorCrimsonGlitch, 0.4))
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("KERNEL HP: %.0f/%.0f", run.KernelHP, run.MaxKernelHP), 20, 32)
 
 	// 2. Cyber-Mana Bar & Siphon Rate
-	vector.FillRect(screen, 155, 12, 130, 16, color.RGBA{R: 25, G: 20, B: 45, A: 255}, false)
 	manaRatio := float32(run.Mana / run.MaxMana)
-	if manaRatio > 0 {
-		vector.FillRect(screen, 155, 12, 130*manaRatio, 16, color.RGBA{R: 160, G: 70, B: 255, A: 255}, false)
-	}
-	vector.StrokeRect(screen, 155, 12, 130, 16, 1.5, color.RGBA{R: 200, G: 130, B: 255, A: 255}, false)
+	gfx.DrawGradientBar(screen, 155, 12, 130, 16, manaRatio, gfx.ColorPurpleArcane, gfx.Brighten(gfx.ColorPurpleArcane, 0.4))
 	effectiveManaRate := run.BaseManaRate * run.ManaGenMult
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("MANA: %.0f (+%.1f/s)", run.Mana, effectiveManaRate), 160, 32)
 
-	// 3. Bytes Currency & XP
+	// 3. Bytes Currency & XP Gradient Bar
 	effectiveByteRate := run.BaseByteRate * run.ByteBountyMult
 	var byteStr string
 	if effectiveByteRate > 0 {
@@ -214,27 +199,23 @@ func (u *UI) DrawHUD(screen *ebiten.Image, run *economy.RunState, spawnerActiveS
 	}
 	ebitenutil.DebugPrintAt(screen, byteStr, 295, 14)
 
-	vector.FillRect(screen, 295, 32, 100, 10, color.RGBA{R: 20, G: 35, B: 25, A: 255}, false)
 	xpRatio := float32(run.CurrentXP / run.TargetXP)
-	if xpRatio > 0 {
-		vector.FillRect(screen, 295, 32, 100*xpRatio, 10, color.RGBA{R: 60, G: 220, B: 100, A: 255}, false)
-	}
-	vector.StrokeRect(screen, 295, 32, 100, 10, 1, color.RGBA{R: 120, G: 255, B: 150, A: 255}, false)
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("LVL %d", run.Level), 402, 29)
+	gfx.DrawGradientBar(screen, 295, 32, 100, 12, xpRatio, gfx.ColorEmeraldBio, gfx.Brighten(gfx.ColorEmeraldBio, 0.4))
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("LVL %d", run.Level), 402, 31)
 
-	// 4. Wave & Phase Indicator (Dynamic Scaling Pacing + Board Threat)
+	// 4. Wave & Phase Indicator
 	var phaseText string
-	phaseColor := color.RGBA{R: 0, G: 200, B: 255, A: 255}
+	phaseColor := gfx.ColorCyanNeon
 	switch phase {
 	case malware.PhaseBuild:
 		phaseText = fmt.Sprintf("RECON (%.0fs)", phaseTimeLeft)
-		phaseColor = color.RGBA{R: 80, G: 220, B: 120, A: 255}
+		phaseColor = gfx.ColorEmeraldBio
 	case malware.PhaseSwarm:
 		phaseText = fmt.Sprintf("SWARM (%.0fs)", phaseTimeLeft)
-		phaseColor = color.RGBA{R: 255, G: 180, B: 40, A: 255}
+		phaseColor = gfx.ColorGoldMatrix
 	case malware.PhaseSurge:
 		phaseText = fmt.Sprintf("! DDoS SURGE (%.0fs) !", phaseTimeLeft)
-		phaseColor = color.RGBA{R: 255, G: 50, B: 80, A: 255}
+		phaseColor = gfx.ColorCrimsonGlitch
 	}
 	if threatLevel > 0 {
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("WAVE %d [T+%d]", waveNum, threatLevel), 475, 14)
@@ -253,10 +234,9 @@ func (u *UI) DrawHUD(screen *ebiten.Image, run *economy.RunState, spawnerActiveS
 	// Pause prompt
 	ebitenutil.DebugPrintAt(screen, "[ESC: PAUSE]", 710, 42)
 
-	// Grace Period / Preparation Countdown Banner
+	// Grace Period Banner
 	if graceTimeLeft > 0 {
-		vector.FillRect(screen, 210, 75, 380, 52, color.RGBA{R: 18, G: 35, B: 55, A: 235}, false)
-		vector.StrokeRect(screen, 210, 75, 380, 52, 2, color.RGBA{R: 0, G: 220, B: 255, A: 255}, false)
+		gfx.DrawHolographicPanel(screen, 210, 75, 380, 52, gfx.ColorCyanNeon, color.RGBA{R: 18, G: 35, B: 55, A: 235})
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf(">>> PREPARING FIREWALLS: MALWARE IN %.1fs <<<", graceTimeLeft), 235, 84)
 		ebitenutil.DebugPrintAt(screen, "[ Place defense nodes (1-5) | Press SPACE to Deploy ]", 225, 104)
 	}
@@ -264,8 +244,9 @@ func (u *UI) DrawHUD(screen *ebiten.Image, run *economy.RunState, spawnerActiveS
 
 func (u *UI) DrawToolbar(screen *ebiten.Image, tm *nodes.TowerManager, sm *spells.SpellManager, km *input.KeybindManager, loadoutTowers [input.MaxToolbarSlots]string, loadoutSpells [input.MaxToolbarSlots]string, run *economy.RunState, cx, cy int) {
 	// Bottom Toolbar Panel
-	vector.FillRect(screen, 0, 535, 800, 65, color.RGBA{R: 14, G: 18, B: 26, A: 255}, false)
-	vector.StrokeLine(screen, 0, 535, 800, 535, 1.5, color.RGBA{R: 0, G: 160, B: 200, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, 0, 535, 800, 65, gfx.ColorPanelBorder, gfx.ColorPanelDark)
+
+	cache := gfx.GetCache()
 
 	// Defense Nodes (Slots 1..5)
 	startX := float32(14)
@@ -281,8 +262,7 @@ func (u *UI) DrawToolbar(screen *ebiten.Image, tm *nodes.TowerManager, sm *spell
 
 		if def == nil {
 			// Empty Slot
-			vector.FillRect(screen, bx, by, btnW, btnH, color.RGBA{R: 18, G: 20, B: 28, A: 200}, false)
-			vector.StrokeRect(screen, bx, by, btnW, btnH, 1, color.RGBA{R: 50, G: 60, B: 75, A: 180}, false)
+			gfx.DrawHolographicPanel(screen, bx, by, btnW, btnH, color.RGBA{R: 50, G: 60, B: 75, A: 180}, color.RGBA{R: 18, G: 20, B: 28, A: 200})
 			keyLabel := km.KeyName(km.TowerKeys[i])
 			ebitenutil.DebugPrintAt(screen, fmt.Sprintf("[%s]", keyLabel), int(bx)+4, int(by)+6)
 			ebitenutil.DebugPrintAt(screen, "EMPTY", int(bx)+4, int(by)+24)
@@ -300,13 +280,22 @@ func (u *UI) DrawToolbar(screen *ebiten.Image, tm *nodes.TowerManager, sm *spell
 			bgColor = color.RGBA{R: 18, G: 18, B: 22, A: 200}
 		}
 
-		vector.FillRect(screen, bx, by, btnW, btnH, bgColor, false)
-
 		borderColor := def.Color
 		if !def.Unlocked || !canAfford {
 			borderColor = color.RGBA{R: 70, G: 80, B: 95, A: 200}
 		}
-		vector.StrokeRect(screen, bx, by, btnW, btnH, 1.5, borderColor, false)
+		gfx.DrawHolographicPanel(screen, bx, by, btnW, btnH, borderColor, bgColor)
+
+		// Procedural Icon Badge
+		if def.Unlocked {
+			icon := cache.GetIconBadge(def.ID, true, def.Color)
+			if icon != nil {
+				op := &ebiten.DrawImageOptions{}
+				op.GeoM.Scale(0.65, 0.65)
+				op.GeoM.Translate(float64(bx+btnW-22), float64(by+6))
+				screen.DrawImage(icon, op)
+			}
+		}
 
 		keyLabel := km.KeyName(km.TowerKeys[i])
 		if def.Unlocked {
@@ -322,8 +311,7 @@ func (u *UI) DrawToolbar(screen *ebiten.Image, tm *nodes.TowerManager, sm *spell
 	codexBtnY := float32(542)
 	codexBtnW := float32(40)
 	codexBtnH := float32(50)
-	vector.FillRect(screen, codexBtnX, codexBtnY, codexBtnW, codexBtnH, color.RGBA{R: 28, G: 38, B: 60, A: 255}, false)
-	vector.StrokeRect(screen, codexBtnX, codexBtnY, codexBtnW, codexBtnH, 1.5, color.RGBA{R: 0, G: 220, B: 255, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, codexBtnX, codexBtnY, codexBtnW, codexBtnH, gfx.ColorCyanNeon, color.RGBA{R: 28, G: 38, B: 60, A: 255})
 	ebitenutil.DebugPrintAt(screen, "TAB", int(codexBtnX)+9, int(codexBtnY)+10)
 	ebitenutil.DebugPrintAt(screen, "BOOK", int(codexBtnX)+5, int(codexBtnY)+28)
 
@@ -338,8 +326,7 @@ func (u *UI) DrawToolbar(screen *ebiten.Image, tm *nodes.TowerManager, sm *spell
 
 		if def == nil {
 			// Empty Slot
-			vector.FillRect(screen, bx, by, btnW, btnH, color.RGBA{R: 20, G: 18, B: 28, A: 200}, false)
-			vector.StrokeRect(screen, bx, by, btnW, btnH, 1, color.RGBA{R: 60, G: 50, B: 75, A: 180}, false)
+			gfx.DrawHolographicPanel(screen, bx, by, btnW, btnH, color.RGBA{R: 60, G: 50, B: 75, A: 180}, color.RGBA{R: 20, G: 18, B: 28, A: 200})
 			keyLabel := km.KeyName(km.SpellKeys[i])
 			ebitenutil.DebugPrintAt(screen, fmt.Sprintf("[%s]", keyLabel), int(bx)+4, int(by)+6)
 			ebitenutil.DebugPrintAt(screen, "EMPTY", int(bx)+4, int(by)+24)
@@ -364,13 +351,6 @@ func (u *UI) DrawToolbar(screen *ebiten.Image, tm *nodes.TowerManager, sm *spell
 			bgColor = color.RGBA{R: 180, G: 20, B: 35, A: flashAlpha}
 		}
 
-		vector.FillRect(screen, bx, by, btnW, btnH, bgColor, false)
-
-		if cd > 0 && def.Cooldown > 0 {
-			cdRatio := float32(cd / (def.Cooldown * run.SpellCooldownMult))
-			vector.FillRect(screen, bx, by, btnW, btnH*cdRatio, color.RGBA{R: 0, G: 0, B: 0, A: 160}, false)
-		}
-
 		borderColor := def.Color
 		if !def.Unlocked || !canAfford || cd > 0 {
 			borderColor = color.RGBA{R: 70, G: 80, B: 95, A: 200}
@@ -378,7 +358,24 @@ func (u *UI) DrawToolbar(screen *ebiten.Image, tm *nodes.TowerManager, sm *spell
 		if flash > 0 {
 			borderColor = color.RGBA{R: 255, G: 60, B: 75, A: 255}
 		}
-		vector.StrokeRect(screen, bx, by, btnW, btnH, 1.8, borderColor, false)
+
+		gfx.DrawHolographicPanel(screen, bx, by, btnW, btnH, borderColor, bgColor)
+
+		if cd > 0 && def.Cooldown > 0 {
+			cdRatio := float32(cd / (def.Cooldown * run.SpellCooldownMult))
+			vector.FillRect(screen, bx, by, btnW, btnH*cdRatio, color.RGBA{R: 0, G: 0, B: 0, A: 160}, false)
+		}
+
+		// Procedural Icon Badge
+		if def.Unlocked {
+			icon := cache.GetIconBadge(def.ID, false, def.Color)
+			if icon != nil {
+				op := &ebiten.DrawImageOptions{}
+				op.GeoM.Scale(0.65, 0.65)
+				op.GeoM.Translate(float64(bx+btnW-22), float64(by+6))
+				screen.DrawImage(icon, op)
+			}
+		}
 
 		keyLabel := km.KeyName(km.SpellKeys[i])
 		if def.Unlocked {
@@ -394,7 +391,7 @@ func (u *UI) DrawToolbar(screen *ebiten.Image, tm *nodes.TowerManager, sm *spell
 		}
 	}
 
-	// Upgrade All Button (Visible when 1 or more towers are at Max Level)
+	// Upgrade All Button
 	if count, totalCost := tm.GetPromotableInfo(); count > 0 {
 		upgBtnX := float32(280)
 		upgBtnY := float32(498)
@@ -403,12 +400,12 @@ func (u *UI) DrawToolbar(screen *ebiten.Image, tm *nodes.TowerManager, sm *spell
 
 		canAffordAll := run.CanAffordBytes(totalCost)
 		bgColor := color.RGBA{R: 20, G: 48, B: 35, A: 245}
-		borderColor := color.RGBA{R: 50, G: 230, B: 110, A: 255}
+		borderColor := gfx.ColorEmeraldBio
 		btnLabel := fmt.Sprintf("^ UPGRADE ALL (%d) | %sB [U]", count, economy.FormatNumber(totalCost))
 
 		if !canAffordAll {
 			bgColor = color.RGBA{R: 45, G: 38, B: 20, A: 240}
-			borderColor = color.RGBA{R: 240, G: 190, B: 40, A: 240}
+			borderColor = gfx.ColorGoldMatrix
 			btnLabel = fmt.Sprintf("^ UPGRADE READY (%d) | %sB [U]", count, economy.FormatNumber(totalCost))
 		}
 
@@ -418,8 +415,7 @@ func (u *UI) DrawToolbar(screen *ebiten.Image, tm *nodes.TowerManager, sm *spell
 			bgColor.B = uint8(math.Min(255, float64(bgColor.B)+30))
 		}
 
-		vector.FillRect(screen, upgBtnX, upgBtnY, upgBtnW, upgBtnH, bgColor, false)
-		vector.StrokeRect(screen, upgBtnX, upgBtnY, upgBtnW, upgBtnH, 1.8, borderColor, false)
+		gfx.DrawHolographicPanel(screen, upgBtnX, upgBtnY, upgBtnW, upgBtnH, borderColor, bgColor)
 		ebitenutil.DebugPrintAt(screen, btnLabel, int(upgBtnX)+10, int(upgBtnY)+8)
 	}
 }
@@ -444,7 +440,7 @@ func (u *UI) DrawPlacementPreview(screen *ebiten.Image, grid *motherboard.Grid, 
 				if def.Range > 0 {
 					rcx, rcy := grid.GridToScreenCenter(gx, gy)
 					effectiveRange := float32(def.Range * run.TowerRangeMult)
-					vector.StrokeCircle(screen, float32(rcx), float32(rcy), effectiveRange, 1.5, color.RGBA{R: 0, G: 200, B: 255, A: 180}, false)
+					vector.StrokeCircle(screen, float32(rcx), float32(rcy), effectiveRange, 1.5, gfx.ColorCyanNeon, false)
 				}
 			}
 		}
@@ -469,7 +465,7 @@ func (u *UI) DrawPlacementPreview(screen *ebiten.Image, grid *motherboard.Grid, 
 				// Draw Range indicator on hovered tower
 				if tower.Def.Range > 0 {
 					effectiveRange := float32(tower.Def.Range * run.TowerRangeMult * tower.GetRangeMult())
-					vector.StrokeCircle(screen, float32(tower.WorldX), float32(tower.WorldY), effectiveRange, 1.2, color.RGBA{R: 255, G: 220, B: 80, A: 120}, false)
+					vector.StrokeCircle(screen, float32(tower.WorldX), float32(tower.WorldY), effectiveRange, 1.2, gfx.ColorGoldMatrix, false)
 				}
 
 				// Tooltip Box near cursor
@@ -492,8 +488,7 @@ func (u *UI) DrawPlacementPreview(screen *ebiten.Image, grid *motherboard.Grid, 
 					tipY = 65
 				}
 
-				vector.FillRect(screen, tipX, tipY, tipW, tipH, color.RGBA{R: 16, G: 20, B: 30, A: 240}, false)
-				vector.StrokeRect(screen, tipX, tipY, tipW, tipH, 1.5, color.RGBA{R: 0, G: 220, B: 255, A: 255}, false)
+				gfx.DrawHolographicPanel(screen, tipX, tipY, tipW, tipH, gfx.ColorCyanNeon, gfx.ColorPanelDark)
 
 				// Header: Name & Tier / Level
 				tierStr := ""
@@ -503,19 +498,19 @@ func (u *UI) DrawPlacementPreview(screen *ebiten.Image, grid *motherboard.Grid, 
 				ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%s%s [Lv.%d/%d]", tower.Def.Name, tierStr, tower.Level, nodes.MaxTowerLevel), int(tipX)+8, int(tipY)+6)
 
 				// XP Bar
-				vector.FillRect(screen, tipX+8, tipY+24, 184, 8, color.RGBA{R: 25, G: 35, B: 45, A: 255}, false)
+				ratio := float32(0.0)
 				if tower.Level >= nodes.MaxTowerLevel {
-					vector.FillRect(screen, tipX+8, tipY+24, 184, 8, color.RGBA{R: 255, G: 215, B: 0, A: 255}, false)
+					ratio = 1.0
+					gfx.DrawGradientBar(screen, tipX+8, tipY+24, 184, 8, ratio, gfx.ColorGoldMatrix, gfx.Brighten(gfx.ColorGoldMatrix, 0.4))
 					ebitenutil.DebugPrintAt(screen, "XP: MAX RANK (READY)", int(tipX)+8, int(tipY)+36)
 				} else if tower.TargetXP > 0 {
-					ratio := float32(tower.XP / tower.TargetXP)
+					ratio = float32(tower.XP / tower.TargetXP)
 					if ratio > 1 {
 						ratio = 1
 					}
-					vector.FillRect(screen, tipX+8, tipY+24, 184*ratio, 8, color.RGBA{R: 0, G: 220, B: 255, A: 255}, false)
+					gfx.DrawGradientBar(screen, tipX+8, tipY+24, 184, 8, ratio, gfx.ColorCyanNeon, gfx.ColorFrostIce)
 					ebitenutil.DebugPrintAt(screen, fmt.Sprintf("XP: %.0f / %.0f (%.0f%%)", tower.XP, tower.TargetXP, ratio*100), int(tipX)+8, int(tipY)+36)
 				}
-				vector.StrokeRect(screen, tipX+8, tipY+24, 184, 8, 1, color.RGBA{R: 80, G: 120, B: 160, A: 200}, false)
 
 				// Scaled stats
 				if tower.Def.Delivery.Type == data.DeliveryPassiveGenerator {
@@ -546,8 +541,7 @@ func (u *UI) DrawPlacementPreview(screen *ebiten.Image, grid *motherboard.Grid, 
 func (u *UI) DrawGameOver(screen *ebiten.Image, run *economy.RunState, metaMgr *meta.MetaManager) {
 	vector.FillRect(screen, 0, 0, 800, 600, color.RGBA{R: 8, G: 10, B: 16, A: 235}, false)
 
-	vector.FillRect(screen, 180, 90, 440, 420, color.RGBA{R: 20, G: 24, B: 36, A: 255}, false)
-	vector.StrokeRect(screen, 180, 90, 440, 420, 2, color.RGBA{R: 255, G: 60, B: 80, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, 180, 90, 440, 420, gfx.ColorCrimsonGlitch, gfx.ColorPanelDark)
 
 	ebitenutil.DebugPrintAt(screen, "=== KERNEL PANIC: CORE INTEGRITY LOST ===", 240, 120)
 
@@ -563,12 +557,10 @@ func (u *UI) DrawGameOver(screen *ebiten.Image, run *economy.RunState, metaMgr *
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("GLITCH SHARDS EXTRACTED: +%d", run.ShardsEarned), 240, 315)
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Total Glitch Shards in Archive: %d", metaMgr.GlitchShards), 240, 345)
 
-	vector.FillRect(screen, 240, 390, 320, 40, color.RGBA{R: 35, G: 55, B: 85, A: 255}, false)
-	vector.StrokeRect(screen, 240, 390, 320, 40, 1.5, color.RGBA{R: 0, G: 200, B: 255, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, 240, 390, 320, 40, gfx.ColorCyanNeon, color.RGBA{R: 35, G: 55, B: 85, A: 255})
 	ebitenutil.DebugPrintAt(screen, "[ ENTER ROOT ACCESS / META-SHOP ] (SPACE)", 265, 404)
 
-	vector.FillRect(screen, 240, 445, 320, 40, color.RGBA{R: 30, G: 45, B: 65, A: 255}, false)
-	vector.StrokeRect(screen, 240, 445, 320, 40, 1.5, color.RGBA{R: 80, G: 220, B: 150, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, 240, 445, 320, 40, gfx.ColorEmeraldBio, color.RGBA{R: 30, G: 45, B: 65, A: 255})
 	ebitenutil.DebugPrintAt(screen, "[ QUICK REBOOT KERNEL ] (ENTER)", 295, 459)
 }
 
@@ -577,8 +569,7 @@ func (u *UI) DrawPauseMenu(screen *ebiten.Image) {
 	vector.FillRect(screen, 0, 0, 800, 600, color.RGBA{R: 5, G: 8, B: 14, A: 230}, false)
 
 	// Pause Box
-	vector.FillRect(screen, 220, 95, 360, 410, color.RGBA{R: 20, G: 26, B: 38, A: 255}, false)
-	vector.StrokeRect(screen, 220, 95, 360, 410, 2, color.RGBA{R: 0, G: 200, B: 255, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, 220, 95, 360, 410, gfx.ColorCyanNeon, gfx.ColorPanelDark)
 
 	ebitenutil.DebugPrintAt(screen, "=== MAINFRAME SUSPENDED (PAUSED) ===", 260, 120)
 
@@ -589,32 +580,27 @@ func (u *UI) DrawPauseMenu(screen *ebiten.Image) {
 
 	// 1. Resume
 	b1Y := float32(160)
-	vector.FillRect(screen, btnX, b1Y, btnW, btnH, color.RGBA{R: 30, G: 60, B: 90, A: 255}, false)
-	vector.StrokeRect(screen, btnX, b1Y, btnW, btnH, 1.5, color.RGBA{R: 0, G: 220, B: 255, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, btnX, b1Y, btnW, btnH, gfx.ColorCyanNeon, color.RGBA{R: 30, G: 60, B: 90, A: 255})
 	ebitenutil.DebugPrintAt(screen, "[ RESUME RUN ] (ESC)", 335, int(b1Y)+14)
 
 	// 2. Settings
 	b2Y := float32(215)
-	vector.FillRect(screen, btnX, b2Y, btnW, btnH, color.RGBA{R: 35, G: 30, B: 52, A: 255}, false)
-	vector.StrokeRect(screen, btnX, b2Y, btnW, btnH, 1.5, color.RGBA{R: 160, G: 110, B: 240, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, btnX, b2Y, btnW, btnH, gfx.ColorPurpleArcane, color.RGBA{R: 35, G: 30, B: 52, A: 255})
 	ebitenutil.DebugPrintAt(screen, "[ DISPLAY & SETTINGS ]", 325, int(b2Y)+14)
 
 	// 3. Save & Exit
 	b3Y := float32(270)
-	vector.FillRect(screen, btnX, b3Y, btnW, btnH, color.RGBA{R: 35, G: 50, B: 75, A: 255}, false)
-	vector.StrokeRect(screen, btnX, b3Y, btnW, btnH, 1.5, color.RGBA{R: 80, G: 200, B: 255, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, btnX, b3Y, btnW, btnH, gfx.ColorCyanGlow, color.RGBA{R: 35, G: 50, B: 75, A: 255})
 	ebitenutil.DebugPrintAt(screen, "[ SAVE & EXIT TO SLOTS ]", 315, int(b3Y)+14)
 
 	// 4. Abandon
 	b4Y := float32(325)
-	vector.FillRect(screen, btnX, b4Y, btnW, btnH, color.RGBA{R: 45, G: 35, B: 55, A: 255}, false)
-	vector.StrokeRect(screen, btnX, b4Y, btnW, btnH, 1.5, color.RGBA{R: 255, G: 120, B: 150, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, btnX, b4Y, btnW, btnH, gfx.ColorCrimsonGlitch, color.RGBA{R: 45, G: 35, B: 55, A: 255})
 	ebitenutil.DebugPrintAt(screen, "[ ABANDON & RESTART RUN ]", 310, int(b4Y)+14)
 
 	// 5. Meta-Shop
 	b5Y := float32(380)
-	vector.FillRect(screen, btnX, b5Y, btnW, btnH, color.RGBA{R: 35, G: 45, B: 65, A: 255}, false)
-	vector.StrokeRect(screen, btnX, b5Y, btnW, btnH, 1.5, color.RGBA{R: 160, G: 120, B: 255, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, btnX, b5Y, btnW, btnH, gfx.ColorPurpleArcane, color.RGBA{R: 35, G: 45, B: 65, A: 255})
 	ebitenutil.DebugPrintAt(screen, "[ ROOT ACCESS ARCHIVE ]", 320, int(b5Y)+14)
 }
 
@@ -622,8 +608,7 @@ func (u *UI) DrawSlotSelectScreen(screen *ebiten.Image, sm *save.SaveManager, cx
 	screen.Fill(color.RGBA{R: 10, G: 14, B: 22, A: 255})
 
 	// Header
-	vector.FillRect(screen, 0, 0, 800, 75, color.RGBA{R: 16, G: 22, B: 34, A: 255}, false)
-	vector.StrokeLine(screen, 0, 75, 800, 75, 2, color.RGBA{R: 0, G: 200, B: 255, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, 0, 0, 800, 75, gfx.ColorCyanNeon, gfx.ColorPanelDark)
 
 	// Back button
 	btnBackX := float32(25)
@@ -635,8 +620,7 @@ func (u *UI) DrawSlotSelectScreen(screen *ebiten.Image, sm *save.SaveManager, cx
 	if hoverBack {
 		bgBack = color.RGBA{R: 40, G: 55, B: 80, A: 255}
 	}
-	vector.FillRect(screen, btnBackX, btnBackY, btnBackW, btnBackH, bgBack, false)
-	vector.StrokeRect(screen, btnBackX, btnBackY, btnBackW, btnBackH, 1.5, color.RGBA{R: 0, G: 180, B: 240, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, btnBackX, btnBackY, btnBackW, btnBackH, gfx.ColorCyanNeon, bgBack)
 	ebitenutil.DebugPrintAt(screen, "< MAIN MENU [ESC]", int(btnBackX)+15, int(btnBackY)+12)
 
 	ebitenutil.DebugPrintAt(screen, "=== SELECT SAVE PROFILE ===", 320, 18)
@@ -652,12 +636,11 @@ func (u *UI) DrawSlotSelectScreen(screen *ebiten.Image, sm *save.SaveManager, cx
 		slot := sm.Slots[i]
 		cardY := startY + float32(i)*(cardH+gap)
 
-		vector.FillRect(screen, 40, cardY, cardW, cardH, color.RGBA{R: 18, G: 24, B: 36, A: 255}, false)
 		borderColor := color.RGBA{R: 50, G: 70, B: 100, A: 255}
 		if slot.Exists {
-			borderColor = color.RGBA{R: 0, G: 180, B: 240, A: 255}
+			borderColor = gfx.ColorCyanNeon
 		}
-		vector.StrokeRect(screen, 40, cardY, cardW, cardH, 1.5, borderColor, false)
+		gfx.DrawHolographicPanel(screen, 40, cardY, cardW, cardH, borderColor, gfx.ColorPanelDark)
 
 		slotTitle := fmt.Sprintf("SLOT 0%d: %s", i+1, slot.ProfileName)
 		if !slot.Exists {
@@ -699,8 +682,7 @@ func (u *UI) DrawSlotSelectScreen(screen *ebiten.Image, sm *save.SaveManager, cx
 			playText = "[ LAUNCH RUN ]"
 		}
 
-		vector.FillRect(screen, btnPlayX, btnPlayY, btnPlayW, btnPlayH, color.RGBA{R: 20, G: 70, B: 110, A: 255}, false)
-		vector.StrokeRect(screen, btnPlayX, btnPlayY, btnPlayW, btnPlayH, 1.5, color.RGBA{R: 0, G: 220, B: 255, A: 255}, false)
+		gfx.DrawHolographicPanel(screen, btnPlayX, btnPlayY, btnPlayW, btnPlayH, gfx.ColorCyanNeon, color.RGBA{R: 20, G: 70, B: 110, A: 255})
 		ebitenutil.DebugPrintAt(screen, playText, int(btnPlayX)+28, int(btnPlayY)+14)
 
 		if slot.Exists {
@@ -709,15 +691,13 @@ func (u *UI) DrawSlotSelectScreen(screen *ebiten.Image, sm *save.SaveManager, cx
 			btnDelW := float32(180)
 			btnDelH := float32(38)
 
-			vector.FillRect(screen, btnDelX, btnDelY, btnDelW, btnDelH, color.RGBA{R: 45, G: 25, B: 35, A: 255}, false)
-			vector.StrokeRect(screen, btnDelX, btnDelY, btnDelW, btnDelH, 1.5, color.RGBA{R: 255, G: 70, B: 90, A: 255}, false)
+			gfx.DrawHolographicPanel(screen, btnDelX, btnDelY, btnDelW, btnDelH, gfx.ColorCrimsonGlitch, color.RGBA{R: 45, G: 25, B: 35, A: 255})
 			ebitenutil.DebugPrintAt(screen, "[ DELETE PROFILE ]", int(btnDelX)+20, int(btnDelY)+12)
 		}
 	}
 
 	// Bottom Bar
-	vector.FillRect(screen, 0, 540, 800, 60, color.RGBA{R: 16, G: 22, B: 34, A: 255}, false)
-	vector.StrokeLine(screen, 0, 540, 800, 540, 1.5, color.RGBA{R: 0, G: 160, B: 200, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, 0, 540, 800, 60, gfx.ColorPanelBorder, gfx.ColorPanelDark)
 	ebitenutil.DebugPrintAt(screen, "[ Profiles are automatically preserved in compressed binary storage ]", 185, 562)
 }
 
@@ -740,8 +720,7 @@ func (u *UI) DrawMetaShop(screen *ebiten.Image, metaMgr *meta.MetaManager, scrol
 		cost := t.CurrentCost()
 		canBuy := cost > 0 && metaMgr.GlitchShards >= cost
 
-		vector.FillRect(screen, 35, cardY, cardW, cardH, color.RGBA{R: 20, G: 26, B: 38, A: 255}, false)
-		vector.StrokeRect(screen, 35, cardY, cardW, cardH, 1.5, color.RGBA{R: 50, G: 70, B: 100, A: 255}, false)
+		gfx.DrawHolographicPanel(screen, 35, cardY, cardW, cardH, color.RGBA{R: 50, G: 70, B: 100, A: 255}, gfx.ColorPanelDark)
 
 		levelStr := fmt.Sprintf("Rank %d/%d", t.Level, t.MaxLevel)
 		if t.Level >= t.MaxLevel {
@@ -759,13 +738,12 @@ func (u *UI) DrawMetaShop(screen *ebiten.Image, metaMgr *meta.MetaManager, scrol
 		if !canBuy {
 			btnBg = color.RGBA{R: 25, G: 28, B: 35, A: 255}
 		}
-		vector.FillRect(screen, btnX, btnY, btnW, btnH, btnBg, false)
 
-		btnBorder := color.RGBA{R: 0, G: 200, B: 255, A: 255}
+		btnBorder := gfx.ColorCyanNeon
 		if !canBuy {
 			btnBorder = color.RGBA{R: 60, G: 70, B: 85, A: 200}
 		}
-		vector.StrokeRect(screen, btnX, btnY, btnW, btnH, 1.5, btnBorder, false)
+		gfx.DrawHolographicPanel(screen, btnX, btnY, btnW, btnH, btnBorder, btnBg)
 
 		if cost > 0 {
 			ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Upgrade (%d Shards)", cost), int(btnX)+8, int(btnY)+14)
@@ -793,27 +771,24 @@ func (u *UI) DrawMetaShop(screen *ebiten.Image, metaMgr *meta.MetaManager, scrol
 		}
 		thumbY := trackY + (trackH-thumbH)*scrollRatio
 
-		vector.FillRect(screen, trackX, thumbY, trackW, thumbH, color.RGBA{R: 0, G: 200, B: 255, A: 255}, false)
+		vector.FillRect(screen, trackX, thumbY, trackW, thumbH, gfx.ColorCyanNeon, false)
 	}
 
 	// Fixed Header
-	vector.FillRect(screen, 0, 0, 800, 75, color.RGBA{R: 16, G: 22, B: 34, A: 255}, false)
-	vector.StrokeLine(screen, 0, 75, 800, 75, 2, color.RGBA{R: 160, G: 70, B: 255, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, 0, 0, 800, 75, gfx.ColorPurpleArcane, gfx.ColorPanelDark)
 
 	ebitenutil.DebugPrintAt(screen, "=== ROOT ACCESS: MOTHERBOARD ARCHITECTURE ARCHIVE ===", 210, 16)
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Archived Glitch Shards: %d  (Scroll with Wheel / Arrow Keys / W & S)", metaMgr.GlitchShards), 150, 42)
 
 	// Fixed Bottom Bar: Start Run
-	vector.FillRect(screen, 0, 530, 800, 70, color.RGBA{R: 16, G: 22, B: 34, A: 255}, false)
-	vector.StrokeLine(screen, 0, 530, 800, 530, 2, color.RGBA{R: 0, G: 200, B: 255, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, 0, 530, 800, 70, gfx.ColorCyanNeon, gfx.ColorPanelDark)
 
 	startBtnX := float32(280)
 	startBtnY := float32(545)
 	startBtnW := float32(240)
 	startBtnH := float32(42)
 
-	vector.FillRect(screen, startBtnX, startBtnY, startBtnW, startBtnH, color.RGBA{R: 20, G: 80, B: 120, A: 255}, false)
-	vector.StrokeRect(screen, startBtnX, startBtnY, startBtnW, startBtnH, 2, color.RGBA{R: 60, G: 240, B: 255, A: 255}, false)
+	gfx.DrawHolographicPanel(screen, startBtnX, startBtnY, startBtnW, startBtnH, gfx.ColorCyanNeon, color.RGBA{R: 20, G: 80, B: 120, A: 255})
 	ebitenutil.DebugPrintAt(screen, "[ BOOT RUN ] (SPACE)", int(startBtnX)+50, int(startBtnY)+15)
 }
 

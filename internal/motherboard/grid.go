@@ -4,6 +4,8 @@ import (
 	"image/color"
 	"math"
 
+	"technomancers-tower/internal/gfx"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
@@ -228,7 +230,8 @@ func (g *Grid) Draw(screen *ebiten.Image) {
 		}
 	}
 
-	// Draw Flowfield Guide Arrows / Circuit Traces
+	// Draw Flowfield Guide Arrows / Energized Circuit Traces
+	traceAnim := math.Sin(g.TraceOffset * 0.15)
 	for x := 0; x < Cols; x++ {
 		for y := 0; y < Rows; y++ {
 			if g.Cells[x][y] == CellEmpty {
@@ -236,31 +239,40 @@ func (g *Grid) Draw(screen *ebiten.Image) {
 				if dir.DX != 0 || dir.DY != 0 {
 					cx := float32(OffsetX + x*CellSize + CellSize/2)
 					cy := float32(OffsetY + y*CellSize + CellSize/2)
-					tx := cx + float32(dir.DX*8)
-					ty := cy + float32(dir.DY*8)
-					vector.StrokeLine(screen, cx, cy, tx, ty, 1.2, color.RGBA{R: 28, G: 65, B: 85, A: 160}, false)
+					tx := cx + float32(dir.DX*10)
+					ty := cy + float32(dir.DY*10)
+
+					pulseAlpha := uint8(math.Max(40, math.Min(220, 120+60*math.Sin(g.TraceOffset*0.2+float64(x+y)*0.5))))
+					traceColor := color.RGBA{R: 0, G: 180, B: 240, A: pulseAlpha}
+					vector.StrokeLine(screen, cx, cy, tx, ty, 1.4, traceColor, false)
+
+					// Small circuit node point
+					vector.FillCircle(screen, cx, cy, 1.5, color.RGBA{R: 0, G: 220, B: 255, A: pulseAlpha}, false)
 				}
 			}
 		}
 	}
 
-	// Draw Perimeter Ports (Spawners)
+	// Draw Perimeter Ports (Spawners) using procedural socket sprites
+	spawnerSprite := gfx.GetCache().GetSpawnerPort()
 	for _, sp := range g.Spawners {
-		sx := float32(OffsetX + sp.X*CellSize)
-		sy := float32(OffsetY + sp.Y*CellSize)
-		sz := float32(CellSize)
-		vector.FillRect(screen, sx+2, sy+2, sz-4, sz-4, color.RGBA{R: 200, G: 40, B: 60, A: 200}, false)
-		vector.StrokeRect(screen, sx+2, sy+2, sz-4, sz-4, 1.5, color.RGBA{R: 255, G: 100, B: 120, A: 255}, false)
+		sx := float64(OffsetX + sp.X*CellSize + 1)
+		sy := float64(OffsetY + sp.Y*CellSize + 1)
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(sx, sy)
+		screen.DrawImage(spawnerSprite, op)
 	}
 
-	// Draw Kernel CPU Core
-	csx := float32(OffsetX + g.CorePos.X*CellSize)
-	csy := float32(OffsetY + g.CorePos.Y*CellSize)
-	csz := float32(CellSize)
-	vector.FillRect(screen, csx+2, csy+2, csz-4, csz-4, color.RGBA{R: 0, G: 160, B: 240, A: 255}, false)
-	vector.StrokeRect(screen, csx+1, csy+1, csz-2, csz-2, 2, color.RGBA{R: 160, G: 240, B: 255, A: 255}, false)
+	// Draw Kernel CPU Core with procedural sprite & radiant pulsing aura
+	coreSprite := gfx.GetCache().GetCPUCore()
+	csx := float64(OffsetX + g.CorePos.X*CellSize - 7)
+	csy := float64(OffsetY + g.CorePos.Y*CellSize - 7)
+	
+	// Pulsing underglow
+	pulseR := float32(22.0 + (traceAnim+1.0)*3.0)
+	vector.StrokeCircle(screen, float32(OffsetX+g.CorePos.X*CellSize+CellSize/2), float32(OffsetY+g.CorePos.Y*CellSize+CellSize/2), pulseR, 1.5, color.RGBA{R: 0, G: 220, B: 255, A: 120}, false)
 
-	// Draw Core Pulse
-	pulse := float32((math.Sin(g.TraceOffset*0.1) + 1.0) * 0.5)
-	vector.FillCircle(screen, csx+csz/2, csy+csz/2, 6+pulse*3, color.RGBA{R: 255, G: 255, B: 255, A: 230}, false)
+	coreOp := &ebiten.DrawImageOptions{}
+	coreOp.GeoM.Translate(csx, csy)
+	screen.DrawImage(coreSprite, coreOp)
 }

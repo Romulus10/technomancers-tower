@@ -7,6 +7,7 @@ import (
 
 	"technomancers-tower/internal/data"
 	"technomancers-tower/internal/economy"
+	"technomancers-tower/internal/gfx"
 	"technomancers-tower/internal/malware"
 	"technomancers-tower/internal/motherboard"
 
@@ -524,74 +525,73 @@ func (p *Projectile) Update(dt float64, enemies []*malware.Enemy, run *economy.R
 }
 
 func (tm *TowerManager) Draw(screen *ebiten.Image) {
+	cache := gfx.GetCache()
+
 	for _, t := range tm.Towers {
 		tx := float32(t.WorldX)
 		ty := float32(t.WorldY)
 
-		// Base shape
-		vector.FillRect(screen, tx-12, ty-12, 24, 24, t.Def.Color, false)
+		// 1. Draw Cached Procedural Sprite
+		sprite := cache.GetTowerSprite(t.Def.ID, t.Tier, t.Def.Color)
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(float64(tx-16), float64(ty-16))
+		screen.DrawImage(sprite, op)
+
+		// 2. Overclock Ready / Max Rank Pulsing Aura
 		if t.Level >= MaxTowerLevel {
-			// Pulsing golden/amber border for ready overclock/promotion
-			vector.StrokeRect(screen, tx-13, ty-13, 26, 26, 2.0, color.RGBA{R: 255, G: 215, B: 0, A: 255}, false)
-		} else {
-			vector.StrokeRect(screen, tx-12, ty-12, 24, 24, 1.5, color.RGBA{R: 255, G: 255, B: 255, A: 200}, false)
+			vector.StrokeRect(screen, tx-16, ty-16, 32, 32, 2.0, gfx.ColorGoldMatrix, false)
 		}
 
-		// Tier indicator if Tier > 1
-		if t.Tier > 1 {
-			ebitenutil.DebugPrintAt(screen, fmt.Sprintf("T%d", t.Tier), int(tx)-6, int(ty)-2)
-		}
-
-		// Rank Pips (Level 1..5)
+		// 3. Rank Pips (Level 1..5)
 		pipW := float32(3.5)
 		pipGap := float32(1.5)
 		totalPipsW := float32(MaxTowerLevel)*pipW + float32(MaxTowerLevel-1)*pipGap
 		pipStartX := tx - totalPipsW/2
-		pipY := ty - 10
+		pipY := ty - 12
 		for lvl := 1; lvl <= MaxTowerLevel; lvl++ {
 			px := pipStartX + float32(lvl-1)*(pipW+pipGap)
 			if lvl <= t.Level {
-				vector.FillRect(screen, px, pipY, pipW, pipW, color.RGBA{R: 255, G: 220, B: 50, A: 255}, false)
+				vector.FillRect(screen, px, pipY, pipW, pipW, gfx.ColorGoldMatrix, false)
 			} else {
 				vector.FillRect(screen, px, pipY, pipW, pipW, color.RGBA{R: 30, G: 40, B: 55, A: 160}, false)
 			}
 		}
 
-		// Floating Upgrade badge if tower reached Max Level
+		// 4. Floating Upgrade badge if tower reached Max Level
 		if t.Level >= MaxTowerLevel {
 			upgCost := t.GetUpgradeCost()
 			badgeText := fmt.Sprintf("^%sB", economy.FormatNumber(upgCost))
-			vector.FillRect(screen, tx-18, ty-22, 36, 10, color.RGBA{R: 15, G: 30, B: 20, A: 220}, false)
-			vector.StrokeRect(screen, tx-18, ty-22, 36, 10, 1.0, color.RGBA{R: 80, G: 255, B: 120, A: 240}, false)
-			ebitenutil.DebugPrintAt(screen, badgeText, int(tx)-16, int(ty)-24)
+			vector.FillRect(screen, tx-18, ty-24, 36, 11, color.RGBA{R: 15, G: 30, B: 20, A: 230}, false)
+			vector.StrokeRect(screen, tx-18, ty-24, 36, 11, 1.0, gfx.ColorEmeraldBio, false)
+			ebitenutil.DebugPrintAt(screen, badgeText, int(tx)-16, int(ty)-25)
 		}
 
-		// Radial Pulse visual effect
+		// 5. Radial Pulse visual effect
 		if t.Def.Delivery.Type == data.DeliveryRadialPulse && t.BeamLife > 0 {
-			vector.StrokeCircle(screen, tx, ty, float32(t.Def.Range*t.GetRangeMult()), 2, color.RGBA{R: 120, G: 220, B: 255, A: 180}, false)
+			ratio := float32(t.BeamLife / t.BeamMaxLife)
+			alpha := uint8(200 * ratio)
+			vector.StrokeCircle(screen, tx, ty, float32(t.Def.Range*t.GetRangeMult()), 2.5*ratio, color.RGBA{R: 120, G: 220, B: 255, A: alpha}, false)
+			vector.FillCircle(screen, tx, ty, float32(t.Def.Range*t.GetRangeMult()*0.9), color.RGBA{R: 80, G: 200, B: 255, A: uint8(40 * ratio)}, false)
 		}
 
-		// Instant Beam visual effect
+		// 6. Instant Beam visual effect
 		if t.Def.Delivery.Type == data.DeliveryInstantBeam && t.BeamLife > 0 {
-			vector.StrokeLine(screen, tx, ty, float32(t.BeamTargetX), float32(t.BeamTargetY), 2.5, color.RGBA{R: 255, G: 240, B: 100, A: 240}, false)
+			ratio := float32(t.BeamLife / t.BeamMaxLife)
+			vector.StrokeLine(screen, tx, ty, float32(t.BeamTargetX), float32(t.BeamTargetY), 3.0*ratio, gfx.Brighten(t.Def.Color, 0.4), false)
+			vector.StrokeLine(screen, tx, ty, float32(t.BeamTargetX), float32(t.BeamTargetY), 1.2*ratio, color.RGBA{255, 255, 255, 255}, false)
 		}
 
-		// Passive generator indicator
-		if t.Def.Delivery.Type == data.DeliveryPassiveGenerator {
-			vector.FillCircle(screen, tx, ty, 5, color.RGBA{R: 255, G: 255, B: 255, A: 240}, false)
-		}
-
-		// Level up expanding ring animation
+		// 7. Level up expanding ring animation
 		if t.LevelUpAnim > 0 {
 			progress := float32(1.0 - (t.LevelUpAnim / 0.6))
-			ringRadius := 12.0 + progress*28.0
+			ringRadius := 12.0 + progress*30.0
 			alpha := uint8(255 * (t.LevelUpAnim / 0.6))
-			vector.StrokeCircle(screen, tx, ty, ringRadius, 2.0, color.RGBA{R: 255, G: 230, B: 80, A: alpha}, false)
+			vector.StrokeCircle(screen, tx, ty, ringRadius, 2.5, color.RGBA{R: 255, G: 230, B: 80, A: alpha}, false)
 		}
 
-		// Floating "+LV.X!" or "+TIER X!" text
+		// 8. Floating "+LV.X!" or "+TIER X!" text
 		if t.LevelUpTextLife > 0 {
-			offsetY := int(ty - 16 - float32((1.2-t.LevelUpTextLife)*18.0))
+			offsetY := int(ty - 18 - float32((1.2-t.LevelUpTextLife)*20.0))
 			if t.Tier > 1 && t.Level == 1 {
 				ebitenutil.DebugPrintAt(screen, fmt.Sprintf("+TIER %d!", t.Tier), int(tx)-22, offsetY)
 			} else {
@@ -600,14 +600,20 @@ func (tm *TowerManager) Draw(screen *ebiten.Image) {
 		}
 	}
 
-	// Draw Projectiles
+	// Draw Projectiles with glowing layered cores
 	for _, p := range tm.Projectiles {
 		px := float32(p.X)
 		py := float32(p.Y)
 		if p.IsMortar {
-			vector.FillCircle(screen, px, py, 4.5, color.RGBA{R: 255, G: 160, B: 40, A: 255}, false)
+			// Ballistic mortar shell with fiery tail
+			vector.FillCircle(screen, px, py, 5.5, gfx.ColorAmberFire, false)
+			vector.FillCircle(screen, px, py, 3.0, gfx.ColorGoldMatrix, false)
+			vector.FillCircle(screen, px, py, 1.5, color.RGBA{255, 255, 255, 255}, false)
 		} else {
-			vector.FillCircle(screen, px, py, 3.0, color.RGBA{R: 0, G: 240, B: 255, A: 255}, false)
+			// High-velocity energy bolt
+			vector.FillCircle(screen, px, py, 4.0, gfx.ColorCyanGlow, false)
+			vector.FillCircle(screen, px, py, 2.5, gfx.ColorCyanNeon, false)
+			vector.FillCircle(screen, px, py, 1.2, color.RGBA{255, 255, 255, 255}, false)
 		}
 	}
 }

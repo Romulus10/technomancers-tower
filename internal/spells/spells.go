@@ -6,6 +6,7 @@ import (
 
 	"technomancers-tower/internal/data"
 	"technomancers-tower/internal/economy"
+	"technomancers-tower/internal/gfx"
 	"technomancers-tower/internal/malware"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -229,12 +230,17 @@ func (sm *SpellManager) Draw(screen *ebiten.Image) {
 	for _, ef := range sm.ActiveEffects {
 		ratio := float32(ef.Life / ef.MaxLife)
 		if ef.IsThunder {
-			vector.StrokeLine(screen, float32(ef.X), float32(ef.Y), float32(ef.TargetX), float32(ef.TargetY), 3.0*ratio, ef.Color, false)
+			// Outer electric aura
+			vector.StrokeLine(screen, float32(ef.X), float32(ef.Y), float32(ef.TargetX), float32(ef.TargetY), 4.5*ratio, ef.Color, false)
+			// Core intense white plasma bolt
+			vector.StrokeLine(screen, float32(ef.X), float32(ef.Y), float32(ef.TargetX), float32(ef.TargetY), 1.8*ratio, color.RGBA{255, 255, 255, 255}, false)
 		} else {
-			r := float32(ef.Radius * (1.1 - float64(ratio)*0.1))
-			vector.StrokeCircle(screen, float32(ef.X), float32(ef.Y), r, 3.0*ratio, ef.Color, false)
-			vector.FillCircle(screen, float32(ef.X), float32(ef.Y), r*0.8*ratio, color.RGBA{
-				R: ef.Color.R, G: ef.Color.G, B: ef.Color.B, A: uint8(100 * ratio),
+			// Expanding shockwave ring
+			r := float32(ef.Radius * (1.15 - float64(ratio)*0.15))
+			vector.StrokeCircle(screen, float32(ef.X), float32(ef.Y), r, 3.5*ratio, ef.Color, false)
+			vector.StrokeCircle(screen, float32(ef.X), float32(ef.Y), r*0.9, 1.5*ratio, gfx.Brighten(ef.Color, 0.4), false)
+			vector.FillCircle(screen, float32(ef.X), float32(ef.Y), r*0.85*ratio, color.RGBA{
+				R: ef.Color.R, G: ef.Color.G, B: ef.Color.B, A: uint8(120 * ratio),
 			}, false)
 		}
 	}

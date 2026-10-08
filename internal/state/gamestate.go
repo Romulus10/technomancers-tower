@@ -14,6 +14,7 @@ import (
 	"technomancers-tower/internal/meta"
 	"technomancers-tower/internal/motherboard"
 	"technomancers-tower/internal/nodes"
+	"technomancers-tower/internal/particles"
 	"technomancers-tower/internal/save"
 	"technomancers-tower/internal/spells"
 	"technomancers-tower/internal/ui"
@@ -51,6 +52,7 @@ type GameState struct {
 	Draft             *draft.DraftManager
 	Meta              *meta.MetaManager
 	UI                *ui.UI
+	Particles         *particles.ParticleManager
 	LoadoutTowers     [input.MaxToolbarSlots]string
 	LoadoutSpells     [input.MaxToolbarSlots]string
 	CodexTab          ui.CodexTab
@@ -81,6 +83,7 @@ func NewGameState(w, h int) *GameState {
 		Registry:     registry,
 		Meta:         metaMgr,
 		UI:           ui.NewUI(),
+		Particles:    particles.NewParticleManager(),
 		ScreenWidth:  w,
 		ScreenHeight: h,
 		LoadoutTowers: [input.MaxToolbarSlots]string{
@@ -137,6 +140,7 @@ func (gs *GameState) StartNewRun() {
 	gs.Towers = nodes.NewTowerManager(gs.Registry)
 	gs.Spells = spells.NewSpellManager(gs.Registry)
 	gs.Draft = draft.NewDraftManager(gs.Registry)
+	gs.Particles = particles.NewParticleManager()
 	gs.UI.HasTowerSelected = false
 	gs.UI.HasSpellSelected = false
 	gs.Mode = ModePlaying
@@ -146,6 +150,7 @@ func (gs *GameState) StartNewRun() {
 
 func (gs *GameState) ResumeRun(slotData *save.SlotData) {
 	gs.Registry = data.NewRegistry()
+	gs.Particles = particles.NewParticleManager()
 
 	for _, tid := range slotData.ActiveRun.UnlockedTowers {
 		if t := gs.Registry.GetTower(tid); t != nil {
@@ -679,6 +684,9 @@ func (gs *GameState) updatePlaying(cx, cy int, justClicked bool) {
 
 	gs.Run.Update(dt)
 	gs.Grid.Update(dt, cx, cy)
+	if gs.Particles != nil {
+		gs.Particles.Update(dt)
+	}
 	if gs.CoreHitFlash > 0 {
 		gs.CoreHitFlash -= dt
 	}
@@ -687,6 +695,12 @@ func (gs *GameState) updatePlaying(cx, cy int, justClicked bool) {
 	gs.Malware.ThreatLevel = gs.Towers.GetTotalOverclockTiers()
 	gs.Malware.Update(dt, gs.Grid, func(e *malware.Enemy) {
 		gs.CoreHitFlash = 0.25
+		if gs.Particles != nil {
+			gs.Particles.Shake.AddTrauma(0.5)
+			coreX, coreY := gs.Grid.GridToScreenCenter(gs.Grid.CorePos.X, gs.Grid.CorePos.Y)
+			gs.Particles.EmitExplosion(coreX, coreY, 30, color.RGBA{R: 255, G: 50, B: 80, A: 255})
+			gs.Particles.AddCombatText(fmt.Sprintf("-%.0f HP", e.CoreDamage), coreX, coreY, color.RGBA{R: 255, G: 70, B: 90, A: 255})
+		}
 		if gs.Run.DamageKernel(e.CoreDamage) {
 			gameOver = true
 		}
@@ -853,6 +867,11 @@ func (gs *GameState) Draw(screen *ebiten.Image) {
 		}
 
 		gs.Spells.Draw(screen)
+
+		if gs.Particles != nil {
+			gs.Particles.Draw(screen)
+		}
+
 		gs.UI.DrawPlacementPreview(screen, gs.Grid, gs.Towers, gs.Spells, gs.Run, cx, cy)
 		gs.UI.DrawHUD(screen, gs.Run, gs.Malware.IsSurging, gs.Malware.SurgeTimeLeft, gs.Malware.StartGraceTimer, gs.Malware.WaveNumber, gs.Malware.CurrentPhase, gs.Malware.PhaseTimer, gs.Towers.GetTotalOverclockTiers())
 		gs.UI.DrawToolbar(screen, gs.Towers, gs.Spells, gs.KeyMgr, gs.LoadoutTowers, gs.LoadoutSpells, gs.Run, cx, cy)
@@ -871,6 +890,9 @@ func (gs *GameState) Draw(screen *ebiten.Image) {
 				e.Draw(screen)
 			}
 			gs.Spells.Draw(screen)
+			if gs.Particles != nil {
+				gs.Particles.Draw(screen)
+			}
 			gs.UI.DrawHUD(screen, gs.Run, gs.Malware.IsSurging, gs.Malware.SurgeTimeLeft, gs.Malware.StartGraceTimer, gs.Malware.WaveNumber, gs.Malware.CurrentPhase, gs.Malware.PhaseTimer, gs.Towers.GetTotalOverclockTiers())
 			gs.UI.DrawToolbar(screen, gs.Towers, gs.Spells, gs.KeyMgr, gs.LoadoutTowers, gs.LoadoutSpells, gs.Run, cx, cy)
 		} else {
