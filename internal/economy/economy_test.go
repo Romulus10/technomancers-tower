@@ -8,21 +8,21 @@ import (
 
 func TestNewRunStateWithMetaModifiers(t *testing.T) {
 	talents := economy.MapTalents{
-		"kernel_shield":        2, // +50 HP -> 150
-		"boot_bytes":           3, // +120 Bytes -> 240
-		"mana_conductor":       1, // +20% Mana gen -> 1.20
-		"overclock_nodes":      2, // +10% Speed -> 1.10
-		"spell_efficiency":     1, // -8% CD, -10% cost
-		"scrap_leech":          2, // +20% Byte bounty -> 1.20
-		"tower_potency":        3, // +18% Dmg -> 1.18
-		"sensor_array":         1, // +6% Range -> 1.06
-		"hardened_firewall":    2, // -2 dmg reduction
-		"natural_mana_regen":   2, // +1.0 mana/sec
-		"expanded_mana_pool":   2, // +50 max mana -> 150
-		"shards_harvest":       2, // +30% shards
-		"starting_level":       1, // start at lvl 2 + 1 bonus draft
-		"draft_rerolls":        2, // 2 rerolls
-		"extra_draft_slot":     1, // 4 draft choices
+		"kernel_shield":      2, // +50 HP -> 150
+		"boot_bytes":         3, // +120 Bytes -> 240
+		"mana_conductor":     1, // +20% Mana gen -> 1.20
+		"overclock_nodes":    2, // +10% Speed -> 1.10
+		"spell_efficiency":   1, // -8% CD, -10% cost
+		"scrap_leech":        2, // +20% Byte bounty -> 1.20
+		"tower_potency":      3, // +18% Dmg -> 1.18
+		"sensor_array":       1, // +6% Range -> 1.06
+		"hardened_firewall":  2, // -2 dmg reduction
+		"natural_mana_regen": 2, // +1.0 mana/sec
+		"expanded_mana_pool": 2, // +50 max mana -> 150
+		"shards_harvest":     2, // +30% shards
+		"starting_level":     1, // start at lvl 2 + 1 bonus draft
+		"draft_rerolls":      2, // 2 rerolls
+		"extra_draft_slot":   1, // 4 draft choices
 	}
 	run := economy.NewRunState(talents)
 

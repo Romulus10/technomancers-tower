@@ -739,13 +739,8 @@ func (u *UI) DrawMetaShop(screen *ebiten.Image, metaMgr *meta.MetaManager, scrol
 		if t.Level >= t.MaxLevel {
 			levelStr = "MAXED"
 		}
-		nameColor := gfx.ColorCyanNeon
-		if t.Level >= t.MaxLevel {
-			nameColor = gfx.ColorGoldMatrix
-		}
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%s (%s)", t.Name, levelStr), 50, int(cardY)+12)
 		ebitenutil.DebugPrintAt(screen, t.Description, 50, int(cardY)+36)
-		_ = nameColor
 
 		// Buy Button
 		btnBuyX := float32(535)

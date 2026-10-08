@@ -69,10 +69,10 @@ func TestMetaManagerTalentProgression(t *testing.T) {
 	}
 
 	// Buy multiple talents and test full ResetAllTalents
-	metaMgr.BuyTalent("kernel_shield") // 10
-	metaMgr.BuyTalent("kernel_shield") // 15
+	metaMgr.BuyTalent("kernel_shield")   // 10
+	metaMgr.BuyTalent("kernel_shield")   // 15
 	metaMgr.BuyTalent("overclock_nodes") // 25
-	metaMgr.BuyTalent("boot_bytes") // 15
+	metaMgr.BuyTalent("boot_bytes")      // 15
 	if metaMgr.GlitchShards != 35 {
 		t.Errorf("expected 35 shards left, got %d", metaMgr.GlitchShards)
 	}
