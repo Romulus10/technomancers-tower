@@ -391,8 +391,11 @@ func (tm *TowerManager) Update(dt float64, enemies []*malware.Enemy, run *econom
 
 // ApplyOnHits executes all configured OnHitEffects (Damage, Splash, Slow, Freeze, Chain) and attributes XP.
 func (tm *TowerManager) ApplyOnHits(sourceTowerID int, effects []data.OnHitEffect, target *malware.Enemy, enemies []*malware.Enemy, run *economy.RunState, dmgMult float64, originX, originY float64, spawner *malware.Spawner) {
+	if run == nil {
+		return
+	}
 	effectiveDmgMult := dmgMult
-	if run != nil && run.TowerCritChance > 0 && rand.Float64() < run.TowerCritChance {
+	if run.TowerCritChance > 0 && rand.Float64() < run.TowerCritChance {
 		effectiveDmgMult *= run.TowerCritMult
 	}
 
@@ -433,7 +436,7 @@ func (tm *TowerManager) ApplyOnHits(sourceTowerID int, effects []data.OnHitEffec
 		case data.OnHitSlow:
 			if target != nil && !target.IsDead {
 				slowDur := eff.SlowDuration
-				if run != nil && run.StatusDurationMult > 0 {
+				if run.StatusDurationMult > 0 {
 					slowDur *= run.StatusDurationMult
 				}
 				target.ApplySlow(eff.SlowFactor, slowDur)
@@ -442,7 +445,7 @@ func (tm *TowerManager) ApplyOnHits(sourceTowerID int, effects []data.OnHitEffec
 		case data.OnHitFreeze:
 			if target != nil && !target.IsDead {
 				freezeSec := eff.FreezeSeconds
-				if run != nil && run.StatusDurationMult > 0 {
+				if run.StatusDurationMult > 0 {
 					freezeSec *= run.StatusDurationMult
 				}
 				target.ApplyFreeze(freezeSec)

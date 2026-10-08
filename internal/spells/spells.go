@@ -108,6 +108,9 @@ func (sm *SpellManager) Update(dt float64, run *economy.RunState) {
 }
 
 func (sm *SpellManager) CastSpell(id string, targetX, targetY float64, enemies []*malware.Enemy, run *economy.RunState, spawner *malware.Spawner) bool {
+	if run == nil {
+		return false
+	}
 	def := sm.Registry.GetSpell(id)
 	if def == nil || !def.Unlocked {
 		sm.TriggerFlash(id)
@@ -127,11 +130,11 @@ func (sm *SpellManager) CastSpell(id string, targetX, targetY float64, enemies [
 
 	// Data-driven execution of all modular payload effects
 	spellDmgMult := 1.0
-	if run != nil && run.SpellCritChance > 0 && rand.Float64() < run.SpellCritChance {
+	if run.SpellCritChance > 0 && rand.Float64() < run.SpellCritChance {
 		spellDmgMult = run.SpellCritMult
 	}
 	spellRadiusMult := 1.0
-	if run != nil && run.SpellRadiusMult > 0 {
+	if run.SpellRadiusMult > 0 {
 		spellRadiusMult = run.SpellRadiusMult
 	}
 

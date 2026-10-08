@@ -156,17 +156,17 @@ func (dm *DraftManager) getCardLayout() (cardW, cardH, gap, startX, startY float
 }
 
 func (dm *DraftManager) Update(cursorX, cursorY int, justClicked bool, run *economy.RunState) bool {
-	if !dm.Active {
+	if !dm.Active || run == nil {
 		return false
 	}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyR) && run != nil && run.DraftRerolls > 0 {
+	if inpututil.IsKeyJustPressed(ebiten.KeyR) && run.DraftRerolls > 0 {
 		dm.Reroll(run)
 		return false
 	}
 
 	// Check Reroll button click
-	if run != nil && run.DraftRerolls > 0 {
+	if run.DraftRerolls > 0 {
 		btnX, btnY, btnW, btnH := float32(310), float32(480), float32(180), float32(34)
 		if float32(cursorX) >= btnX && float32(cursorX) <= btnX+btnW && float32(cursorY) >= btnY && float32(cursorY) <= btnY+btnH {
 			if justClicked {
